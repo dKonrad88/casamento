@@ -49,12 +49,59 @@
   .conn{font-size:.85rem;color:var(--muted);margin-top:6px}
   .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%) translateY(20px);background:#0a0f15;color:#fff;border:1px solid var(--line);padding:11px 18px;border-radius:999px;font-size:.9rem;opacity:0;transition:.25s;z-index:70;pointer-events:none}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .back-btn{position:absolute;top:calc(env(safe-area-inset-top) + 14px);left:10px;width:40px;height:44px;border-radius:12px;background:transparent;border:0;color:#fff;font-size:1.8rem;line-height:1;cursor:pointer;display:none}
+  .header.sub-view h1{padding-left:36px}
+  select.f{width:100%;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:11px;padding:12px 14px;font-size:1rem;font-family:inherit;margin-bottom:10px;outline:none;-webkit-appearance:none;appearance:none}
+  select.f:focus{border-color:var(--primary2)}
+  label.fl{display:block;font-size:.8rem;color:var(--muted);margin:2px 0 5px}
+  .seg{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;margin-bottom:2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .seg::-webkit-scrollbar{display:none}
+  .seg button{flex:0 0 auto;border:1px solid var(--line);background:var(--card2);color:var(--muted);border-radius:999px;padding:7px 14px;font-size:.82rem;font-family:inherit;cursor:pointer;white-space:nowrap}
+  .seg button.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .row{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid var(--line)}
+  .row:first-child{border-top:0}
+  .row .grow{flex:1;min-width:0}
+  .row .tt{font-weight:500;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .row .tt.done{text-decoration:line-through;opacity:.5}
+  .row .ms{font-size:.77rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ib{border:0;background:transparent;color:var(--muted);font-size:1.15rem;cursor:pointer;padding:6px;border-radius:8px;line-height:1}
+  .ib:active{background:var(--card2)}
+  .chk{width:24px;height:24px;flex:0 0 auto;border:2px solid var(--line);border-radius:8px;background:var(--card2);cursor:pointer;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.85rem}
+  .chk.on{background:var(--ok);border-color:var(--ok)}
+  .tag{font-size:.66rem;padding:2px 8px;border-radius:999px;font-weight:600;white-space:nowrap;flex:0 0 auto}
+  .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;display:inline-block}
+  .rsvp{display:flex;gap:6px;flex:0 0 auto}
+  .rsvp button{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--card2);color:var(--muted);cursor:pointer;font-size:1rem;line-height:1}
+  .rsvp button.yes.on{background:var(--ok);border-color:var(--ok);color:#fff}
+  .rsvp button.no.on{background:var(--erro);border-color:var(--erro);color:#fff}
+  .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
+  .stat .n{font-size:1.55rem;font-weight:600;line-height:1.1}
+  .stat .l{font-size:.74rem;color:var(--muted);margin-top:4px}
+  .prog{height:10px;border-radius:999px;background:var(--card2);overflow:hidden;margin-top:10px;border:1px solid var(--line)}
+  .prog > i{display:block;height:100%;background:linear-gradient(90deg,#185FA5,#1a7a8a);border-radius:999px;transition:width .4s}
+  .cd{display:flex;gap:10px;justify-content:center;text-align:center}
+  .cd .b{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px 4px}
+  .cd .b .v{font-size:1.8rem;font-weight:700;color:var(--primary2)}
+  .cd .b .k{font-size:.7rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+  .addbar{display:flex;gap:8px;margin-top:12px}
+  .addbar .f{margin-bottom:0}
+  .addbar .btn{width:auto;flex:0 0 auto;padding:12px 16px}
+  .mini{font-size:.82rem;color:var(--muted)}
+  .clsec{border:1px solid var(--line);border-radius:12px;margin-top:12px;overflow:hidden;background:var(--card2)}
+  .clsec-h{display:flex;align-items:center;gap:8px;padding:12px 14px;cursor:pointer;font-weight:600;font-size:.95rem}
+  .clsec-h .cnt{margin-left:auto;font-size:.78rem;color:var(--muted);font-weight:400}
+  .clsec-b{padding:4px 14px 12px}
+  .empty{text-align:center;color:var(--muted);font-size:.9rem;padding:26px 10px}
+  .totbar{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+  .totbar .v{font-size:1.4rem;font-weight:700}
 </style>
 </head>
 <body>
   <div class="header">
+    <button class="back-btn" id="backBtn" aria-label="Voltar">‹</button>
     <button class="cfg-btn" id="cfgBtn" aria-label="Configurações">⚙️</button>
-    <h1>💍 Casamento</h1>
+    <h1 id="htitle">💍 Casamento</h1>
     <p id="hsub">Nosso planejamento</p>
   </div>
   <div class="wrap"><div id="app"></div></div>
@@ -63,6 +110,11 @@
   <div class="modal" id="cfgModal" style="display:none">
     <div class="handle"></div>
     <div id="cfgBody"></div>
+  </div>
+  <div class="modal-bg" id="fBg"></div>
+  <div class="modal" id="fModal" style="display:none">
+    <div class="handle"></div>
+    <div id="fBody"></div>
   </div>
   <div class="toast" id="toast"></div>
 
@@ -157,12 +209,48 @@
     render();
   }
 
-  /* ---------- render ---------- */
+  /* ---------- dados: helpers (leem as MESMAS chaves/shapes do HUB) ---------- */
+  var NIVEIS=[['obrigatorio','Com certeza','#34d399'],['queremos','Queremos','#fbbf24'],['pensar','Pensar muito','#22d3ee'],['secouber','Se couber','#a78bfa']];
+  function nivelInfo(k){for(var i=0;i<NIVEIS.length;i++)if(NIVEIS[i][0]===k)return NIVEIS[i];return NIVEIS[0];}
+  function gConv(){var a=CAS.get('convidados',[]);return Array.isArray(a)?a:[];}
+  function gTar(){var a=CAS.get('tarefas',[]);return Array.isArray(a)?a:[];}
+  function gGas(){var a=CAS.get('gastos',[]);return Array.isArray(a)?a:[];}
+  function gChk(){var c=CAS.get('checklist',{sections:[]});if(!c||typeof c!=='object')c={sections:[]};if(!Array.isArray(c.sections))c.sections=[];return c;}
+  function gMeta(){return parseFloat(CAS.get('meta',0))||0;}
+  function gData(){return CAS.get('data','')||'';}
+  function effStatus(c){return c.status||(c.nivel==='obrigatorio'?'confirmado':'pendente');}
+  function qtd(c){return parseInt(c.qtd)||1;}
+  // gasto tolerante ao shape rico do HUB
+  function gasVal(g){return parseFloat(g.valor)||0;}
+  function gasCancel(g){return !!g.cancelado||g.statusForn==='Cancelado';}
+  function gasCat(g){return g.categoria||g.empresa||'';}
+  function gasPago(g){if(typeof g.pago==='boolean')return g.pago;if(Array.isArray(g.parcelas)&&g.parcelas.length)return g.parcelas.every(function(p){return p.paga;});return g.status==='pago';}
+  var _idc=null;
+  function nid(){if(_idc==null){var all=[].concat(gConv(),gTar(),gGas()).map(function(x){return parseInt(x&&x.id)||0;});_idc=Math.max.apply(null,[2000].concat(all));}return ++_idc;}
+  function fmt(v){return 'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function pm(s){s=String(s==null?'':s).trim();if(!s)return 0;s=s.replace(/[^\d.,]/g,'');if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');return parseFloat(s)||0;}
+  function save(k,v){CAS.set(k,v);}
+  function countdown(){
+    var d=gData();if(!d||!/^\d{4}-\d{2}-\d{2}$/.test(d))return null;
+    var alvo=new Date(d+'T00:00:00'),hoje=new Date();hoje.setHours(0,0,0,0);
+    var dias=Math.round((alvo-hoje)/86400000);
+    return {dias:dias,sem:Math.floor(Math.abs(dias)/7),meses:Math.round(Math.abs(dias)/30.44),alvo:alvo};
+  }
+
+  /* ---------- form (bottom-sheet) ---------- */
+  function openForm(html){$('#fBody').innerHTML=html;$('#fBg').classList.add('open');$('#fModal').style.display='block';}
+  function closeForm(){$('#fBg').classList.remove('open');$('#fModal').style.display='none';$('#fBody').innerHTML='';}
+
+  /* ---------- render / router ---------- */
+  var view='home';
   var SECOES=[['🏠','Início','resumo do casamento','inicio'],['👥','Convidados','lista e confirmações','convidados'],['✅','Tarefas','o que falta fazer','tarefas'],['💸','Gastos','orçamento e pagamentos','gastos'],['📋','Checklist','itens do dia','checklist']];
+  var TITULOS={inicio:'Início',convidados:'Convidados',tarefas:'Tarefas',gastos:'Gastos',checklist:'Checklist'};
+  function go(v){view=v;closeForm();window.scrollTo(0,0);render();}
   function render(){
-    var app=$('#app');
+    var app=$('#app'),bb=$('#backBtn'),hd=document.querySelector('.header');
     if(!user){
-      $('#hsub').textContent='Entre na sua conta';
+      view='home';bb.style.display='none';hd.classList.remove('sub-view');
+      $('#htitle').innerHTML='💍 Casamento';$('#hsub').textContent='Entre na sua conta';
       app.innerHTML='<div class="card"><h2>🔐 Entrar na sua conta</h2><div class="sub" style="margin-bottom:12px">E-mail e senha. A mesma conta da suíte.</div>'+
         '<input class="f" id="loEmail" type="email" autocapitalize="off" autocorrect="off" placeholder="seu e-mail">'+
         '<input class="f" id="loPass" type="password" autocomplete="current-password" placeholder="senha">'+
@@ -171,7 +259,8 @@
       return;
     }
     if(!espacoId){
-      $('#hsub').textContent='Comece por aqui';
+      view='home';bb.style.display='none';hd.classList.remove('sub-view');
+      $('#htitle').innerHTML='💍 Casamento';$('#hsub').textContent='Comece por aqui';
       app.innerHTML='<div class="card"><h2>💍 Nosso casamento</h2><div class="sub">Crie o espaço do casamento (você vira o dono) ou entre com um código que te passaram.</div>'+
         '<button class="btn" id="crBtn" style="margin-top:14px">Criar o casamento</button>'+
         '<div style="height:10px"></div>'+
@@ -181,13 +270,267 @@
       $('#joBtn').addEventListener('click',entrarPorCodigo);
       return;
     }
-    // home com as seções (placeholders — a sessão do Casamento monta cada tela)
-    $('#hsub').textContent=espacoNome;
-    var tiles=SECOES.map(function(s){return '<div class="tile" data-sec="'+s[3]+'"><div class="ic">'+s[0]+'</div><div class="t">'+esc(s[1])+'</div><div class="s">'+esc(s[2])+'</div></div>';}).join('');
-    app.innerHTML='<div class="grid">'+tiles+'</div>'+
-      '<div class="card"><div class="sub">🚧 As telas (convidados, tarefas, gastos, checklist) vão ser montadas na sessão do Casamento. A base já está pronta: login, espaço compartilhado, dados na nuvem (<code>casamento_state</code>) e convite por código.</div></div>';
-    [].forEach.call(document.querySelectorAll('.tile'),function(el){el.addEventListener('click',function(){toast('Tela "'+el.getAttribute('data-sec')+'" em construção');});});
+    if(view==='home'){
+      bb.style.display='none';hd.classList.remove('sub-view');
+      $('#htitle').innerHTML='💍 Casamento';$('#hsub').textContent=espacoNome;
+      var tiles=SECOES.map(function(s){return '<div class="tile" data-act="go" data-v="'+s[3]+'"><div class="ic">'+s[0]+'</div><div class="t">'+esc(s[1])+'</div><div class="s">'+esc(s[2])+'</div></div>';}).join('');
+      app.innerHTML='<div class="grid">'+tiles+'</div>';
+      return;
+    }
+    bb.style.display='block';hd.classList.add('sub-view');
+    $('#htitle').innerHTML='💍 Casamento';$('#hsub').textContent=TITULOS[view]||espacoNome;
+    if(view==='inicio')renderInicio(app);
+    else if(view==='convidados')renderConvidados(app);
+    else if(view==='tarefas')renderTarefas(app);
+    else if(view==='gastos')renderGastos(app);
+    else if(view==='checklist')renderChecklist(app);
+    else{view='home';render();}
   }
+
+  /* ---------- Início (resumo) ---------- */
+  function renderInicio(app){
+    var conv=gConv(),tar=gTar(),gas=gGas().filter(function(g){return !gasCancel(g);});
+    var totPessoas=conv.reduce(function(s,c){return s+qtd(c);},0);
+    var conf=conv.filter(function(c){return effStatus(c)==='confirmado';}).reduce(function(s,c){return s+qtd(c);},0);
+    var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
+    var totGasto=gas.reduce(function(s,g){return s+gasVal(g);},0);
+    var pagoT=gas.filter(gasPago).reduce(function(s,g){return s+gasVal(g);},0);
+    var meta=gMeta();
+    var tarPend=tar.filter(function(t){return !t.done;}).length;
+    var tarTot=tar.length;
+    var cd=countdown();
+    var cdCard;
+    if(!cd){cdCard='<div class="card"><div class="mini" style="text-align:center">Defina a data do casamento nos ⚙ Configurações… ou no botão abaixo 💍</div><button class="btn soft" data-act="setdata" style="margin-top:10px">Definir data</button></div>';}
+    else if(cd.dias<0){cdCard='<div class="card" style="text-align:center"><div style="font-size:1.2rem;font-weight:700;color:#e84393">Já casaram! 🎉💍</div><div class="mini" style="margin-top:4px">'+esc(cd.alvo.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}))+'</div></div>';}
+    else if(cd.dias===0){cdCard='<div class="card" style="text-align:center"><div style="font-size:1.3rem;font-weight:700;color:#e84393">É hoje! 🎉💍</div></div>';}
+    else{cdCard='<div class="card"><div class="cd"><div class="b"><div class="v">'+cd.dias+'</div><div class="k">Dias</div></div><div class="b"><div class="v">'+cd.sem+'</div><div class="k">Semanas</div></div><div class="b"><div class="v">'+cd.meses+'</div><div class="k">Meses</div></div></div><div class="mini" style="text-align:center;margin-top:10px">💍 '+esc(cd.alvo.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'}))+'</div></div>';}
+    var pctMeta=meta>0?Math.min(totGasto/meta,1)*100:0;
+    var metaLine=meta>0?(totGasto<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-totGasto)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(totGasto-meta)+'</span>'):'defina a meta em Gastos';
+    app.innerHTML=cdCard+
+      '<div class="statgrid">'+
+        '<div class="stat"><div class="n" style="color:#34d399">'+conf+'</div><div class="l">Confirmados'+(totPessoas?' de '+totPessoas:'')+'</div></div>'+
+        '<div class="stat"><div class="n" style="color:#fbbf24">'+pend+'</div><div class="l">A confirmar</div></div>'+
+        '<div class="stat"><div class="n">'+tarPend+'</div><div class="l">Tarefas pendentes'+(tarTot?' de '+tarTot:'')+'</div></div>'+
+        '<div class="stat"><div class="n" style="color:'+(pagoT>=totGasto&&totGasto>0?'#34d399':'var(--ink)')+'">'+fmt(pagoT).replace('R$ ','R$ ')+'</div><div class="l">Já pago</div></div>'+
+      '</div>'+
+      '<div class="card"><div class="totbar"><div><div class="mini">Gasto vs meta</div><div class="v">'+fmt(totGasto)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
+        '<div class="prog"><i style="width:'+pctMeta+'%"></i></div>'+
+        '<div class="mini" style="margin-top:8px">'+metaLine+'</div></div>'+
+      '<div class="grid" style="margin-top:14px">'+
+        '<div class="tile" data-act="go" data-v="convidados"><div class="ic">👥</div><div class="t">Convidados</div></div>'+
+        '<div class="tile" data-act="go" data-v="tarefas"><div class="ic">✅</div><div class="t">Tarefas</div></div>'+
+        '<div class="tile" data-act="go" data-v="gastos"><div class="ic">💸</div><div class="t">Gastos</div></div>'+
+        '<div class="tile" data-act="go" data-v="checklist"><div class="ic">📋</div><div class="t">Checklist</div></div>'+
+      '</div>';
+  }
+
+  /* ---------- Convidados ---------- */
+  var convFilter='all';
+  function renderConvidados(app){
+    var conv=gConv();
+    var tot=conv.reduce(function(s,c){return s+qtd(c);},0);
+    var conf=conv.filter(function(c){return effStatus(c)==='confirmado';}).reduce(function(s,c){return s+qtd(c);},0);
+    var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
+    var rec=conv.filter(function(c){return effStatus(c)==='recusado';}).reduce(function(s,c){return s+qtd(c);},0);
+    var segs=[['all','Todos'],['confirmado','Confirmados'],['pendente','Pendentes'],['recusado','Recusaram']].concat(NIVEIS.map(function(n){return [n[0],n[1]];}));
+    var seg='<div class="seg">'+segs.map(function(s){return '<button data-act="cfil" data-v="'+s[0]+'"'+(convFilter===s[0]?' class="on"':'')+'>'+esc(s[1])+'</button>';}).join('')+'</div>';
+    var isStatus=(convFilter==='confirmado'||convFilter==='pendente'||convFilter==='recusado');
+    var isNivel=NIVEIS.some(function(n){return n[0]===convFilter;});
+    var list=conv.filter(function(c){if(convFilter==='all')return true;if(isStatus)return effStatus(c)===convFilter;if(isNivel)return c.nivel===convFilter;return true;});
+    // agrupa por nível
+    var body='';
+    NIVEIS.forEach(function(n){
+      var g=list.filter(function(c){return c.nivel===n[0];});
+      if(!g.length)return;
+      var rows=g.map(function(c){
+        var st=effStatus(c),casal=c.conjuge&&c.conjuge.trim();
+        return '<div class="row">'+
+          '<span class="dot" style="background:'+n[2]+'"></span>'+
+          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt">'+esc(c.nome)+(casal?' <span class="mini">+ '+esc(c.conjuge)+'</span>':'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑 padrinho':'')+'</div></div>'+
+          '<div class="rsvp"><button class="yes'+(st==='confirmado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="confirmado" title="Confirmou">✓</button>'+
+          '<button class="no'+(st==='recusado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="recusado" title="Recusou">✕</button></div>'+
+          '<button class="ib" data-act="cdel" data-id="'+c.id+'">🗑</button></div>';
+      }).join('');
+      body+='<div class="card"><h2 style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
+    });
+    if(!body)body='<div class="card"><div class="empty">Ninguém neste filtro.<br>Toque em "＋ Adicionar" pra começar.</div></div>';
+    app.innerHTML=
+      '<div class="statgrid">'+
+        '<div class="stat"><div class="n">'+tot+'</div><div class="l">Total pessoas</div></div>'+
+        '<div class="stat"><div class="n" style="color:#34d399">'+conf+'</div><div class="l">Confirmados</div></div>'+
+        '<div class="stat"><div class="n" style="color:#fbbf24">'+pend+'</div><div class="l">Pendentes</div></div>'+
+        '<div class="stat"><div class="n" style="color:#d2533f">'+rec+'</div><div class="l">Recusaram</div></div>'+
+      '</div>'+
+      '<button class="btn" data-act="cadd" style="margin-top:14px">＋ Adicionar convidado</button>'+
+      seg+body;
+  }
+  function formConvidado(c){
+    c=c||{};
+    var nivelOpts=NIVEIS.map(function(n){return '<option value="'+n[0]+'"'+((c.nivel||'obrigatorio')===n[0]?' selected':'')+'>'+n[1]+'</option>';}).join('');
+    var st=c.id?effStatus(c):'pendente';
+    var stOpts=[['pendente','Pendente'],['confirmado','Confirmado'],['recusado','Recusou']].map(function(s){return '<option value="'+s[0]+'"'+(st===s[0]?' selected':'')+'>'+s[1]+'</option>';}).join('');
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:10px">'+(c.id?'Editar convidado':'Novo convidado')+'</h2>'+
+      '<label class="fl">Nome</label><input class="f" id="cvNome" value="'+esc(c.nome||'')+'" placeholder="Nome">'+
+      '<label class="fl">Cônjuge / acompanhante (opcional)</label><input class="f" id="cvConj" value="'+esc(c.conjuge||'')+'" placeholder="+ conta como 2 pessoas">'+
+      '<label class="fl">Grupo</label><select class="f" id="cvNivel">'+nivelOpts+'</select>'+
+      '<label class="fl">Status</label><select class="f" id="cvSt">'+stOpts+'</select>'+
+      '<label class="checkline"><span class="chk'+(c.padrinho?' on':'')+'" id="cvPad" data-on="'+(c.padrinho?'1':'0')+'">'+(c.padrinho?'✓':'')+'</span> Padrinho / madrinha</label>'+
+      '<button class="btn" data-act="csave" data-id="'+(c.id||'')+'">Salvar</button>'+
+      (c.id?'<button class="btn soft" data-act="cdel" data-id="'+c.id+'" style="margin-top:8px">Excluir</button>':''));
+  }
+  function saveConvidado(id){
+    var nome=($('#cvNome').value||'').trim();if(!nome){$('#cvNome').focus();return;}
+    var conj=($('#cvConj').value||'').trim();
+    var nivel=$('#cvNivel').value,st=$('#cvSt').value,pad=$('#cvPad').getAttribute('data-on')==='1';
+    var arr=gConv().slice();
+    if(id){var c=arr.filter(function(x){return String(x.id)===String(id);})[0];if(c){c.nome=nome;c.conjuge=conj;c.nivel=nivel;c.status=st;c.qtd=conj?2:1;c.padrinho=pad;}}
+    else{arr.push({id:nid(),nome:nome,conjuge:conj,nivel:nivel,status:st,qtd:conj?2:1,padrinho:pad});}
+    save('convidados',arr);closeForm();render();
+  }
+
+  /* ---------- Tarefas ---------- */
+  function renderTarefas(app){
+    var tar=gTar();
+    var pend=tar.filter(function(t){return !t.done;}).length,feito=tar.length-pend;
+    var rows=tar.map(function(t){
+      var sub=[];if(t.quem)sub.push('👤 '+esc(t.quem));if(t.data)sub.push('📅 '+esc(fmtBR(t.data)));
+      return '<div class="row"><span class="chk'+(t.done?' on':'')+'" data-act="ttog" data-id="'+t.id+'">'+(t.done?'✓':'')+'</span>'+
+        '<div class="grow" data-act="tedit" data-id="'+t.id+'"><div class="tt'+(t.done?' done':'')+'">'+(esc(t.titulo)||'<span class="mini">(sem título)</span>')+'</div>'+(sub.length?'<div class="ms">'+sub.join(' · ')+'</div>':'')+'</div>'+
+        '<button class="ib" data-act="tdel" data-id="'+t.id+'">🗑</button></div>';
+    }).join('');
+    app.innerHTML=
+      '<div class="statgrid">'+
+        '<div class="stat"><div class="n">'+pend+'</div><div class="l">Pendentes</div></div>'+
+        '<div class="stat"><div class="n" style="color:#34d399">'+feito+'</div><div class="l">Concluídas</div></div>'+
+      '</div>'+
+      '<button class="btn" data-act="tadd" style="margin-top:14px">＋ Nova tarefa</button>'+
+      (tar.length?'<div class="card">'+rows+'</div>':'<div class="card"><div class="empty">Nenhuma tarefa ainda.</div></div>');
+  }
+  function formTarefa(t){
+    t=t||{};
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:10px">'+(t.id?'Editar tarefa':'Nova tarefa')+'</h2>'+
+      '<label class="fl">Tarefa</label><input class="f" id="tTit" value="'+esc(t.titulo||'')+'" placeholder="O que fazer">'+
+      '<label class="fl">Responsável</label><input class="f" id="tQuem" value="'+esc(t.quem||'')+'" placeholder="Quem?">'+
+      '<label class="fl">Data</label><input class="f" id="tData" type="date" value="'+esc(t.data||'')+'">'+
+      '<label class="checkline"><span class="chk'+(t.done?' on':'')+'" id="tDone" data-on="'+(t.done?'1':'0')+'">'+(t.done?'✓':'')+'</span> Concluída</label>'+
+      '<button class="btn" data-act="tsave" data-id="'+(t.id||'')+'">Salvar</button>'+
+      (t.id?'<button class="btn soft" data-act="tdel" data-id="'+t.id+'" style="margin-top:8px">Excluir</button>':''));
+  }
+  function saveTarefa(id){
+    var tit=($('#tTit').value||'').trim();if(!tit){$('#tTit').focus();return;}
+    var quem=($('#tQuem').value||'').trim(),data=$('#tData').value||'',done=$('#tDone').getAttribute('data-on')==='1';
+    var arr=gTar().slice();
+    if(id){var t=arr.filter(function(x){return String(x.id)===String(id);})[0];if(t){t.titulo=tit;t.quem=quem;t.data=data;t.done=done;}}
+    else{arr.push({id:nid(),titulo:tit,quem:quem,data:data,done:done});}
+    save('tarefas',arr);closeForm();render();
+  }
+
+  /* ---------- Gastos ---------- */
+  function renderGastos(app){
+    var gas=gGas(),ativos=gas.filter(function(g){return !gasCancel(g);});
+    var total=ativos.reduce(function(s,g){return s+gasVal(g);},0);
+    var pago=ativos.filter(gasPago).reduce(function(s,g){return s+gasVal(g);},0);
+    var meta=gMeta();
+    var pct=meta>0?Math.min(total/meta,1)*100:0;
+    var metaLine=meta>0?(total<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-total)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(total-meta)+'</span>'):'toque em "Meta" pra definir';
+    var rows=gas.map(function(g){
+      var cat=gasCat(g),pg=gasPago(g),canc=gasCancel(g);
+      return '<div class="row"><span class="chk'+(pg?' on':'')+'" data-act="gtog" data-id="'+g.id+'" title="Pago?">'+(pg?'✓':'')+'</span>'+
+        '<div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div><div class="ms">'+(cat?esc(cat)+' · ':'')+(pg?'pago':'a pagar')+(canc?' · cancelado':'')+'</div></div>'+
+        '<div style="text-align:right;flex:0 0 auto"><div style="font-weight:600">'+fmt(gasVal(g))+'</div></div>'+
+        '<button class="ib" data-act="gdel" data-id="'+g.id+'">🗑</button></div>';
+    }).join('');
+    app.innerHTML=
+      '<div class="card"><div class="totbar"><div><div class="mini">Total lançado</div><div class="v">'+fmt(total)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
+        '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
+        '<div class="mini" style="margin-top:8px">Pago '+fmt(pago)+' · '+metaLine+'</div>'+
+        '<button class="btn soft" data-act="gmeta" style="margin-top:12px">Definir meta</button></div>'+
+      '<button class="btn" data-act="gadd" style="margin-top:14px">＋ Novo gasto</button>'+
+      (gas.length?'<div class="card">'+rows+'</div>':'<div class="card"><div class="empty">Nenhum gasto lançado ainda.</div></div>');
+  }
+  function formGasto(g){
+    g=g||{};
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:10px">'+(g.id?'Editar gasto':'Novo gasto')+'</h2>'+
+      '<label class="fl">Descrição</label><input class="f" id="gDesc" value="'+esc(g.desc||'')+'" placeholder="Ex.: Buffet">'+
+      '<label class="fl">Categoria / fornecedor</label><input class="f" id="gCat" value="'+esc(gasCat(g))+'" placeholder="Ex.: Espaço, Fotos…">'+
+      '<label class="fl">Valor (R$)</label><input class="f" id="gVal" inputmode="decimal" value="'+(g.valor?String(g.valor).replace('.',','):'')+'" placeholder="0,00">'+
+      '<label class="checkline"><span class="chk'+(gasPago(g)?' on':'')+'" id="gPago" data-on="'+(gasPago(g)?'1':'0')+'">'+(gasPago(g)?'✓':'')+'</span> Já pago</label>'+
+      '<button class="btn" data-act="gsave" data-id="'+(g.id||'')+'">Salvar</button>'+
+      (g.id?'<button class="btn soft" data-act="gdel" data-id="'+g.id+'" style="margin-top:8px">Excluir</button>':''));
+  }
+  function saveGasto(id){
+    var desc=($('#gDesc').value||'').trim();if(!desc){$('#gDesc').focus();return;}
+    var cat=($('#gCat').value||'').trim(),valor=pm($('#gVal').value),pago=$('#gPago').getAttribute('data-on')==='1';
+    var arr=gGas().slice();
+    if(id){var g=arr.filter(function(x){return String(x.id)===String(id);})[0];if(g){g.desc=desc;g.categoria=cat;g.empresa=cat;g.valor=valor;g.pago=pago;if(Array.isArray(g.parcelas))delete g.parcelas;g.status=pago?'pago':'apagar';}}
+    else{arr.push({id:nid(),data:new Date().toLocaleDateString('pt-BR'),desc:desc,categoria:cat,empresa:cat,valor:valor,pago:pago,status:pago?'pago':'apagar'});}
+    save('gastos',arr);closeForm();render();
+  }
+
+  /* ---------- Checklist ---------- */
+  function renderChecklist(app){
+    var cl=gChk();var total=0,done=0;
+    cl.sections.forEach(function(s){var it=s.items||[];total+=it.length;done+=it.filter(function(i){return i.done;}).length;});
+    var pct=total?Math.round(done/total*100):0;
+    var secs=cl.sections.map(function(s){
+      var it=s.items||[],dn=it.filter(function(i){return i.done;}).length,open=s.open!==false;
+      var items=it.map(function(i){
+        return '<div class="row"><span class="chk'+(i.done?' on':'')+'" data-act="clt" data-sid="'+esc(s.id)+'" data-iid="'+esc(i.id)+'">'+(i.done?'✓':'')+'</span>'+
+          '<div class="grow" data-act="cli" data-sid="'+esc(s.id)+'" data-iid="'+esc(i.id)+'"><div class="tt'+(i.done?' done':'')+'" style="white-space:normal">'+esc(i.text)+'</div></div>'+
+          '<button class="ib" data-act="cldi" data-sid="'+esc(s.id)+'" data-iid="'+esc(i.id)+'">🗑</button></div>';
+      }).join('');
+      return '<div class="clsec"><div class="clsec-h" data-act="clto" data-sid="'+esc(s.id)+'"><span>'+(open?'▾':'▸')+'</span>'+esc(s.name)+'<span class="cnt">'+dn+'/'+it.length+'</span>'+
+        '<button class="ib" data-act="clds" data-sid="'+esc(s.id)+'">🗑</button></div>'+
+        (open?'<div class="clsec-b">'+items+'<div class="addbar"><input class="f" id="cli-'+esc(s.id)+'" placeholder="Adicionar item…"><button class="btn" data-act="clai" data-sid="'+esc(s.id)+'">＋</button></div></div>':'')+'</div>';
+    }).join('');
+    app.innerHTML=
+      '<div class="card"><div class="mini">Progresso</div><div class="prog"><i style="width:'+pct+'%"></i></div><div class="mini" style="margin-top:8px">'+done+' de '+total+' itens ('+pct+'%)</div></div>'+
+      '<button class="btn" data-act="clas" style="margin-top:14px">＋ Nova seção</button>'+
+      (cl.sections.length?secs:'<div class="card"><div class="empty">Nenhuma seção ainda.<br>Crie uma pra listar os itens.</div></div>');
+  }
+
+  function fmtBR(d){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?m[3]+'/'+m[2]+'/'+m[1]:(d||'');}
+
+  /* ---------- delegação de eventos ---------- */
+  function findId(el){return el.getAttribute('data-id');}
+  function onAppClick(e){
+    var el=e.target.closest('[data-act]');if(!el)return;
+    var act=el.getAttribute('data-act'),id=el.getAttribute('data-id'),v=el.getAttribute('data-v');
+    var sid=el.getAttribute('data-sid'),iid=el.getAttribute('data-iid');
+    if(act==='go'){go(v);return;}
+    if(act==='setdata'){pedirData();return;}
+    // convidados
+    if(act==='cadd'){formConvidado(null);return;}
+    if(act==='cedit'){var c=gConv().filter(function(x){return String(x.id)===String(id);})[0];if(c)formConvidado(c);return;}
+    if(act==='cfil'){convFilter=v;render();return;}
+    if(act==='cst'){var arr=gConv().slice();var c=arr.filter(function(x){return String(x.id)===String(id);})[0];if(c){c.status=(effStatus(c)===v?'pendente':v);save('convidados',arr);render();}return;}
+    if(act==='cdel'){var nm=(gConv().filter(function(x){return String(x.id)===String(id);})[0]||{}).nome||'convidado';if(confirm('Excluir "'+nm+'"?')){save('convidados',gConv().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
+    if(act==='csave'){saveConvidado(id);return;}
+    // tarefas
+    if(act==='tadd'){formTarefa(null);return;}
+    if(act==='tedit'){var t=gTar().filter(function(x){return String(x.id)===String(id);})[0];if(t)formTarefa(t);return;}
+    if(act==='ttog'){var ar=gTar().slice();var tt=ar.filter(function(x){return String(x.id)===String(id);})[0];if(tt){tt.done=!tt.done;save('tarefas',ar);render();}return;}
+    if(act==='tdel'){if(confirm('Excluir tarefa?')){save('tarefas',gTar().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
+    if(act==='tsave'){saveTarefa(id);return;}
+    // gastos
+    if(act==='gadd'){formGasto(null);return;}
+    if(act==='gedit'){var g=gGas().filter(function(x){return String(x.id)===String(id);})[0];if(g)formGasto(g);return;}
+    if(act==='gtog'){var ga=gGas().slice();var gg=ga.filter(function(x){return String(x.id)===String(id);})[0];if(gg){var np=!gasPago(gg);gg.pago=np;if(Array.isArray(gg.parcelas))delete gg.parcelas;gg.status=np?'pago':'apagar';save('gastos',ga);render();}return;}
+    if(act==='gdel'){if(confirm('Excluir gasto?')){save('gastos',gGas().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
+    if(act==='gsave'){saveGasto(id);return;}
+    if(act==='gmeta'){var m=prompt('Meta de gastos (R$):',gMeta()||'');if(m===null)return;save('meta',pm(m));render();return;}
+    // checklist
+    if(act==='clas'){var nome=prompt('Nome da seção:');if(!nome)return;var cl=gChk();cl.sections.push({id:'cs'+nid(),name:nome.trim(),open:true,items:[]});save('checklist',cl);render();return;}
+    if(act==='clto'){var cl2=gChk();var s=cl2.sections.filter(function(x){return x.id===sid;})[0];if(s){s.open=(s.open===false);save('checklist',cl2);render();}return;}
+    if(act==='clds'){if(confirm('Excluir seção?')){var cl3=gChk();cl3.sections=cl3.sections.filter(function(x){return x.id!==sid;});save('checklist',cl3);render();}return;}
+    if(act==='clt'){var cl4=gChk();var s4=cl4.sections.filter(function(x){return x.id===sid;})[0];var i4=s4&&(s4.items||[]).filter(function(x){return x.id===iid;})[0];if(i4){i4.done=!i4.done;save('checklist',cl4);render();}return;}
+    if(act==='cldi'){var cl5=gChk();var s5=cl5.sections.filter(function(x){return x.id===sid;})[0];if(s5){s5.items=(s5.items||[]).filter(function(x){return x.id!==iid;});save('checklist',cl5);render();}return;}
+    if(act==='cli'){var cl6=gChk();var s6=cl6.sections.filter(function(x){return x.id===sid;})[0];var i6=s6&&(s6.items||[]).filter(function(x){return x.id===iid;})[0];if(i6){var nv=prompt('Editar item:',i6.text);if(nv!==null){nv=nv.trim();if(nv){i6.text=nv;save('checklist',cl6);render();}}}return;}
+    if(act==='clai'){var inp=$('#cli-'+CSS.escape(sid));var txt=inp?(inp.value||'').trim():'';if(!txt)return;var cl7=gChk();var s7=cl7.sections.filter(function(x){return x.id===sid;})[0];if(s7){(s7.items=s7.items||[]).push({id:'ci'+nid(),text:txt,done:false});save('checklist',cl7);render();}return;}
+    // form chk toggles
+    if(el.classList.contains('chk')&&(el.id==='cvPad'||el.id==='tDone'||el.id==='gPago')){var on=el.getAttribute('data-on')==='1';el.setAttribute('data-on',on?'0':'1');el.classList.toggle('on',!on);el.textContent=on?'':'✓';return;}
+  }
+  function pedirData(){var v=prompt('Data do casamento (AAAA-MM-DD):',gData()||'');if(v===null)return;v=String(v).trim();if(v&&!/^\d{4}-\d{2}-\d{2}$/.test(v)){toast('Use AAAA-MM-DD, ex: 2027-05-15');return;}save('data',v);render();}
 
   /* ---------- Configurações ---------- */
   function openCfg(){renderCfg();$('#cfgBg').classList.add('open');$('#cfgModal').style.display='block';}
@@ -201,12 +544,16 @@
     var compart = (user&&espacoId)
       ? '<button class="mitem" id="cfgShare"><span class="mic">🔗</span> Compartilhar (gerar código)</button>'+(code?'<div class="code-box">'+esc(code)+'</div><div class="sub" style="text-align:center">Passe esse código pra Débora entrar. Vale 7 dias.</div>':'')
       : '';
+    var dataItem = (user&&espacoId)
+      ? '<button class="mitem" id="cfgData"><span class="mic">📅</span> Data do casamento'+(gData()?' — '+esc(fmtBR(gData())):'')+'</button>'
+      : '';
     body.innerHTML='<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:6px">⚙️ Configurações</h2>'+
-      conta+compart+
+      conta+compart+dataItem+
       '<button class="mitem" id="cfgUpd"><span class="mic">🔄</span> Atualizar o app</button>'+
       '<button class="mitem" id="cfgTheme"><span class="mic">'+(theme==='dark'?'☀️':'🌙')+'</span> Tema '+(theme==='dark'?'claro':'escuro')+'</button>';
     var o=$('#cfgOut');if(o)o.addEventListener('click',sbLogout);
     var sh=$('#cfgShare');if(sh)sh.addEventListener('click',gerarConvite);
+    var dt=$('#cfgData');if(dt)dt.addEventListener('click',function(){closeCfg();pedirData();});
     $('#cfgUpd').addEventListener('click',updateApp);
     $('#cfgTheme').addEventListener('click',function(){setTheme(theme==='dark'?'light':'dark');});
   }
@@ -215,6 +562,9 @@
   initTheme();
   $('#cfgBtn').addEventListener('click',openCfg);
   $('#cfgBg').addEventListener('click',closeCfg);
+  $('#backBtn').addEventListener('click',function(){go('home');});
+  $('#fBg').addEventListener('click',closeForm);
+  document.addEventListener('click',onAppClick);
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
 
