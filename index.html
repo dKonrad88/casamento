@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Casamento</title>
+<meta name="theme-color" content="#185FA5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Casamento">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{--bg:#0e1620;--card:#16222e;--card2:#1c2b3a;--ink:#e9eef3;--muted:#9fb1c2;--line:#243443;--primary:#185FA5;--primary2:#1a7a8a;--primary-d:#0d3d6b;--ok:#1f9d63;--erro:#d2533f;--radius:14px}
+  [data-theme="light"]{--bg:#eef1f4;--card:#ffffff;--card2:#f4f7fa;--ink:#16202b;--muted:#5b6b7d;--line:#e0e6ec}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+  .header{background:linear-gradient(135deg,#0d3d6b,#185FA5 55%,#1a7a8a);color:#fff;padding:calc(env(safe-area-inset-top) + 20px) 18px 22px;border-radius:0 0 24px 24px;position:relative}
+  .header h1{font-size:1.35rem;font-weight:600;display:flex;align-items:center;gap:.5rem}
+  .header p{font-size:.82rem;opacity:.9;margin-top:2px}
+  .cfg-btn{position:absolute;top:calc(env(safe-area-inset-top) + 16px);right:16px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.18);border:0;color:#fff;font-size:1.2rem;cursor:pointer}
+  .wrap{max-width:560px;margin:0 auto;padding:16px 16px 90px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
+  .card h2{font-size:1rem;font-weight:600;margin-bottom:.3rem}
+  .sub{font-size:.85rem;color:var(--muted)}
+  input.f{width:100%;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:11px;padding:12px 14px;font-size:1rem;font-family:inherit;outline:none;margin-bottom:10px}
+  input.f:focus{border-color:var(--primary2)}
+  .btn{width:100%;border:0;background:linear-gradient(135deg,#185FA5,#1a7a8a);color:#fff;border-radius:12px;padding:13px;font-size:1rem;font-weight:600;cursor:pointer;font-family:inherit}
+  .btn.soft{background:var(--card2);color:var(--ink);border:1.5px solid var(--line)}
+  .btn:disabled{opacity:.6}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
+  .tile{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:18px 14px;cursor:pointer;text-align:left}
+  .tile .ic{font-size:1.6rem}
+  .tile .t{font-weight:600;margin-top:6px}
+  .tile .s{font-size:.78rem;color:var(--muted);margin-top:2px}
+  .status{font-size:.85rem;margin-top:8px;min-height:1.1em}
+  .status.err{color:var(--erro)} .status.ok{color:var(--ok)}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:60;display:none}
+  .modal-bg.open{display:block}
+  .modal{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-radius:22px 22px 0 0;z-index:61;padding:12px 18px calc(env(safe-area-inset-bottom) + 20px);max-height:82vh;overflow:auto}
+  .modal .handle{width:42px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 14px}
+  .mitem{display:flex;gap:12px;align-items:center;width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:10px;color:var(--ink);font-size:1rem;font-weight:500;cursor:pointer;text-align:left;font-family:inherit}
+  .mitem .mic{font-size:1.15rem}
+  .code-box{font-size:1.8rem;font-weight:700;letter-spacing:4px;text-align:center;background:var(--card2);border:1px dashed var(--primary2);border-radius:12px;padding:16px;margin:10px 0;color:var(--primary2)}
+  .conn{font-size:.85rem;color:var(--muted);margin-top:6px}
+  .toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%) translateY(20px);background:#0a0f15;color:#fff;border:1px solid var(--line);padding:11px 18px;border-radius:999px;font-size:.9rem;opacity:0;transition:.25s;z-index:70;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+  <div class="header">
+    <button class="cfg-btn" id="cfgBtn" aria-label="Configurações">⚙️</button>
+    <h1>💍 Casamento</h1>
+    <p id="hsub">Nosso planejamento</p>
+  </div>
+  <div class="wrap"><div id="app"></div></div>
+
+  <div class="modal-bg" id="cfgBg"></div>
+  <div class="modal" id="cfgModal" style="display:none">
+    <div class="handle"></div>
+    <div id="cfgBody"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+  var SB_URL='https://jlouesrrmqeauzlgvrpw.supabase.co';
+  var SB_KEY='sb_publishable_ulG1woVG1p1Seax63GGYPQ_PG6-8l-G';
+  var sb=null, user=null, espacoId=null, espacoNome='Casamento', dados={};
+  var $=function(s){return document.querySelector(s);};
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+  var toastT=null;
+  function toast(m){var t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove('show');},2000);}
+
+  /* ---------- tema ---------- */
+  function setTheme(t){document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('cas_theme',t);}catch(e){}renderCfg();}
+  function initTheme(){var t='dark';try{t=localStorage.getItem('cas_theme')||'dark';}catch(e){}document.documentElement.setAttribute('data-theme',t);}
+
+  /* ---------- atualizar app ---------- */
+  async function updateApp(){
+    try{toast('Atualizando…');}catch(e){}
+    if(!('serviceWorker' in navigator)){location.reload();return;}
+    try{
+      var reg=await navigator.serviceWorker.getRegistration();
+      if(reg){try{await reg.update();}catch(e){}}
+      if(reg&&reg.waiting){var done=false;navigator.serviceWorker.addEventListener('controllerchange',function(){if(done)return;done=true;location.reload();});reg.waiting.postMessage({type:'SKIP_WAITING'});setTimeout(function(){if(!done){done=true;location.reload();}},1500);return;}
+      if(window.caches){var ks=await caches.keys();await Promise.all(ks.map(function(k){return caches.delete(k);}));}
+      location.reload();
+    }catch(e){location.reload();}
+  }
+
+  /* ---------- supabase ---------- */
+  function sbInit(){if(!sb&&window.supabase){try{sb=window.supabase.createClient(SB_URL,SB_KEY);sb.auth.onAuthStateChange(function(_e,sess){user=sess?sess.user:null;if(user){boot();}else{render();}});}catch(e){sb=null;}}return sb;}
+
+  async function sbLogin(){
+    sbInit();if(!sb){toast('Sem conexão.');return;}
+    var email=($('#loEmail').value||'').trim().toLowerCase(), pass=($('#loPass').value||'');
+    if(!email||email.indexOf('@')<1){setStatus('Digite um e-mail válido.','err');return;}
+    if(!pass){setStatus('Digite a senha.','err');return;}
+    var b=$('#loBtn');if(b){b.disabled=true;b.textContent='entrando…';}
+    var r=await sb.auth.signInWithPassword({email:email,password:pass});
+    if(r.error){if(b){b.disabled=false;b.textContent='Entrar';}setStatus(/Invalid login/i.test(r.error.message)?'E-mail ou senha incorretos.':('Falha: '+r.error.message),'err');return;}
+    user=r.data.user; boot();
+  }
+  function sbLogout(){ (sb?sb.auth.signOut():Promise.resolve()).then(function(){user=null;espacoId=null;dados={};closeCfg();render();toast('Saiu da conta.');}); }
+  function setStatus(m,cls){var s=$('#loStatus');if(s){s.className='status '+(cls||'');s.textContent=m;}}
+
+  /* ---------- espaço (reaproveita o motor do "lista") ---------- */
+  async function carregarEspacos(){
+    var r=await sb.from('listas').select('id,nome,tipo').eq('tipo','casamento').order('created_at');
+    return r.error?[]:(r.data||[]);
+  }
+  async function criarEspaco(){
+    var r=await sb.rpc('criar_lista',{p_nome:'Casamento',p_tipo:'casamento'});
+    if(r.error){toast('Falha: '+r.error.message);return;}
+    espacoId=r.data; await carregarDados(); render();
+  }
+  async function entrarPorCodigo(){
+    var code=($('#joinCode').value||'').trim().toUpperCase();
+    if(code.length<4){setStatus('Digite o código.','err');return;}
+    var r=await sb.rpc('entrar_por_codigo',{p_codigo:code});
+    if(r.error){setStatus(/invalido/i.test(r.error.message)?'Código inválido.':(/expirado/i.test(r.error.message)?'Código expirado.':('Falha: '+r.error.message)),'err');return;}
+    espacoId=r.data; await carregarDados(); toast('Entrou no casamento ✓'); render();
+  }
+  async function gerarConvite(){
+    if(!espacoId)return;
+    var r=await sb.rpc('criar_convite',{p_lista:espacoId});
+    if(r.error){toast('Falha: '+r.error.message);return;}
+    renderCfg(r.data);
+  }
+
+  /* ---------- dados (casamento_state key/value) ---------- */
+  async function carregarDados(){
+    dados={};
+    if(!espacoId)return;
+    var r=await sb.from('casamento_state').select('key,value').eq('lista_id',espacoId);
+    if(!r.error){(r.data||[]).forEach(function(x){dados[x.key]=x.value;});}
+  }
+  async function salvar(key,value){
+    if(!espacoId)return;
+    dados[key]=value;
+    await sb.from('casamento_state').upsert({lista_id:espacoId,key:key,value:value,updated_at:new Date().toISOString()});
+  }
+  window.CAS={get:function(k,def){return (k in dados)?dados[k]:def;},set:salvar,espaco:function(){return espacoId;},reload:async function(){await carregarDados();render();}};
+
+  /* ---------- boot ---------- */
+  async function boot(){
+    if(!user){render();return;}
+    var esps=await carregarEspacos();
+    if(esps.length){espacoId=esps[0].id;espacoNome=esps[0].nome||'Casamento';await carregarDados();}
+    else{espacoId=null;}
+    render();
+  }
+
+  /* ---------- render ---------- */
+  var SECOES=[['🏠','Início','resumo do casamento','inicio'],['👥','Convidados','lista e confirmações','convidados'],['✅','Tarefas','o que falta fazer','tarefas'],['💸','Gastos','orçamento e pagamentos','gastos'],['📋','Checklist','itens do dia','checklist']];
+  function render(){
+    var app=$('#app');
+    if(!user){
+      $('#hsub').textContent='Entre na sua conta';
+      app.innerHTML='<div class="card"><h2>🔐 Entrar na sua conta</h2><div class="sub" style="margin-bottom:12px">E-mail e senha. A mesma conta da suíte.</div>'+
+        '<input class="f" id="loEmail" type="email" autocapitalize="off" autocorrect="off" placeholder="seu e-mail">'+
+        '<input class="f" id="loPass" type="password" autocomplete="current-password" placeholder="senha">'+
+        '<button class="btn" id="loBtn">Entrar</button><div class="status" id="loStatus"></div></div>';
+      $('#loBtn').addEventListener('click',sbLogin);
+      return;
+    }
+    if(!espacoId){
+      $('#hsub').textContent='Comece por aqui';
+      app.innerHTML='<div class="card"><h2>💍 Nosso casamento</h2><div class="sub">Crie o espaço do casamento (você vira o dono) ou entre com um código que te passaram.</div>'+
+        '<button class="btn" id="crBtn" style="margin-top:14px">Criar o casamento</button>'+
+        '<div style="height:10px"></div>'+
+        '<input class="f" id="joinCode" autocapitalize="characters" placeholder="código de convite (ex.: ABC123)">'+
+        '<button class="btn soft" id="joBtn">Entrar com código</button><div class="status" id="loStatus"></div></div>';
+      $('#crBtn').addEventListener('click',criarEspaco);
+      $('#joBtn').addEventListener('click',entrarPorCodigo);
+      return;
+    }
+    // home com as seções (placeholders — a sessão do Casamento monta cada tela)
+    $('#hsub').textContent=espacoNome;
+    var tiles=SECOES.map(function(s){return '<div class="tile" data-sec="'+s[3]+'"><div class="ic">'+s[0]+'</div><div class="t">'+esc(s[1])+'</div><div class="s">'+esc(s[2])+'</div></div>';}).join('');
+    app.innerHTML='<div class="grid">'+tiles+'</div>'+
+      '<div class="card"><div class="sub">🚧 As telas (convidados, tarefas, gastos, checklist) vão ser montadas na sessão do Casamento. A base já está pronta: login, espaço compartilhado, dados na nuvem (<code>casamento_state</code>) e convite por código.</div></div>';
+    [].forEach.call(document.querySelectorAll('.tile'),function(el){el.addEventListener('click',function(){toast('Tela "'+el.getAttribute('data-sec')+'" em construção');});});
+  }
+
+  /* ---------- Configurações ---------- */
+  function openCfg(){renderCfg();$('#cfgBg').classList.add('open');$('#cfgModal').style.display='block';}
+  function closeCfg(){$('#cfgBg').classList.remove('open');$('#cfgModal').style.display='none';}
+  function renderCfg(code){
+    var body=$('#cfgBody');if(!body)return;
+    var theme=document.documentElement.getAttribute('data-theme');
+    var conta = user
+      ? '<div class="conn">✓ Conectado — '+esc(user.email)+'</div><button class="mitem" id="cfgOut"><span class="mic">🚪</span> Sair da conta</button>'
+      : '<div class="conn">Não conectado.</div>';
+    var compart = (user&&espacoId)
+      ? '<button class="mitem" id="cfgShare"><span class="mic">🔗</span> Compartilhar (gerar código)</button>'+(code?'<div class="code-box">'+esc(code)+'</div><div class="sub" style="text-align:center">Passe esse código pra Débora entrar. Vale 7 dias.</div>':'')
+      : '';
+    body.innerHTML='<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:6px">⚙️ Configurações</h2>'+
+      conta+compart+
+      '<button class="mitem" id="cfgUpd"><span class="mic">🔄</span> Atualizar o app</button>'+
+      '<button class="mitem" id="cfgTheme"><span class="mic">'+(theme==='dark'?'☀️':'🌙')+'</span> Tema '+(theme==='dark'?'claro':'escuro')+'</button>';
+    var o=$('#cfgOut');if(o)o.addEventListener('click',sbLogout);
+    var sh=$('#cfgShare');if(sh)sh.addEventListener('click',gerarConvite);
+    $('#cfgUpd').addEventListener('click',updateApp);
+    $('#cfgTheme').addEventListener('click',function(){setTheme(theme==='dark'?'light':'dark');});
+  }
+
+  /* ---------- init ---------- */
+  initTheme();
+  $('#cfgBtn').addEventListener('click',openCfg);
+  $('#cfgBg').addEventListener('click',closeCfg);
+  sbInit();
+  if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
+
+  if('serviceWorker' in navigator){window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js').catch(function(){});});}
+})();
+</script>
+</body>
+</html>
