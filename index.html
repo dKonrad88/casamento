@@ -465,15 +465,16 @@
     var lista=gGas().filter(function(g){return gasFiltro==='todos'?true:gTipoOf(g)===gasFiltro;});
     var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
     var rows=lista.map(function(g){
-      var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g),eco=gEco(g);
-      var vi=parseFloat(g.valorIni)||0;
-      var right=(vi>0?'<div class="ms" style="text-decoration:line-through;opacity:.65">'+fmt(vi)+'</div>':'')+
-        '<div style="font-weight:600">'+fmt(gasVal(g))+'</div>'+
-        (eco>0?'<div class="ms" style="color:#34d399">▼ '+fmt(eco)+'</div>':'');
+      var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g);
+      var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);
+      var realEco=(vf>0&&vi>vf)?(vi-vf):0;
+      var right=(vi>0?'<div class="ms" style="opacity:.8">inicial '+fmt(vi)+'</div>':'')+
+        '<div style="font-weight:600">'+(vi>0?'<span class="ms" style="font-weight:400;opacity:.8">final </span>':'')+fmt(vf)+'</div>'+
+        (realEco>0?'<div class="ms" style="color:#34d399">▼ economia '+fmt(realEco)+'</div>':'');
       var sub=['<span class="badge" style="background:'+cor+'">'+esc(st)+'</span>'];
       if(g.empresa||g.categoria)sub.push('<span>'+esc(g.empresa||g.categoria)+'</span>');
       if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push('<span>'+p.filter(function(x){return x.paga;}).length+'/'+p.length+' pago</span>');var pv=gProxVenc(g);if(pv&&!canc)sub.push('<span>venc '+esc(pv)+'</span>');}
-      return '<div class="row"><div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div>'+
+      return '<div class="row"><div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'" style="white-space:normal;line-height:1.3">'+esc(g.desc||'(sem descrição)')+'</div>'+
         '<div class="ms" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;white-space:normal">'+sub.join('<span style="opacity:.35">·</span>')+'</div></div>'+
         '<div style="text-align:right;flex:0 0 auto">'+right+'</div>'+
         (tipo==='fechado'?'<button class="ib" data-act="gpag" data-id="'+g.id+'" title="Pagamentos">💳</button>':'')+
