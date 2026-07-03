@@ -95,6 +95,15 @@
   .empty{text-align:center;color:var(--muted);font-size:.9rem;padding:26px 10px}
   .totbar{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .totbar .v{font-size:1.4rem;font-weight:700}
+  .badge{font-size:.66rem;padding:2px 8px;border-radius:999px;font-weight:600;color:#fff;white-space:nowrap}
+  .parc{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--card2)}
+  .pf{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 8px;font-size:.85rem;font-family:inherit;outline:none;min-width:0}
+  .pf:focus{border-color:var(--primary2)}
+  .parc .pl{flex:1 1 100%}
+  .parc .pv{flex:1 1 88px}
+  .parc .pd{flex:1 1 132px}
+  .parc .pk{flex:0 0 auto}
+  .parc .ib{flex:0 0 auto;margin-left:auto}
 </style>
 </head>
 <body>
@@ -289,13 +298,12 @@
 
   /* ---------- Início (resumo) ---------- */
   function renderInicio(app){
-    var conv=gConv(),tar=gTar(),gas=gGas().filter(function(g){return !gasCancel(g);});
+    var conv=gConv(),tar=gTar();
     var totPessoas=conv.reduce(function(s,c){return s+qtd(c);},0);
     var conf=conv.filter(function(c){return effStatus(c)==='confirmado';}).reduce(function(s,c){return s+qtd(c);},0);
     var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
-    var totGasto=gas.reduce(function(s,g){return s+gasVal(g);},0);
-    var pagoT=gas.filter(gasPago).reduce(function(s,g){return s+gasVal(g);},0);
-    var meta=gMeta();
+    var rg=gastosResumo();
+    var totGasto=rg.projecao,pagoT=rg.pago,meta=rg.meta;
     var tarPend=tar.filter(function(t){return !t.done;}).length;
     var tarTot=tar.length;
     var cd=countdown();
@@ -425,47 +433,141 @@
     save('tarefas',arr);closeForm();render();
   }
 
-  /* ---------- Gastos ---------- */
+  /* ---------- Gastos (paridade com o HUB: Fechado/Planejando, status, orçado×final, parcelas) ---------- */
+  var CAS_STATUS=['Não iniciado','Pesquisando','Contatado','Aguardando retorno','Orçamento recebido','Em negociação','Escolhido','Contratado','Em andamento','Finalizado','Cancelado'];
+  function casStatusTipo(s){return ['Contratado','Em andamento','Finalizado'].indexOf(s)>=0?'fechado':'planejado';}
+  function gTipoOf(g){return g.tipo==='planejado'?'planejado':'fechado';}
+  function casStatusOf(g){return g.statusForn||(gTipoOf(g)==='fechado'?'Contratado':'Não iniciado');}
+  function casStatusColor(s){if(s==='Cancelado')return '#d2533f';if(['Contratado','Em andamento','Finalizado'].indexOf(s)>=0)return '#1f9d63';if(['Orçamento recebido','Em negociação','Escolhido'].indexOf(s)>=0)return '#c99a2e';return '#5b6b7d';}
+  function gParc(g){return Array.isArray(g.parcelas)?g.parcelas:[];}
+  function gPagoAmt(g){var p=gParc(g);if(p.length)return p.filter(function(x){return x.paga;}).reduce(function(s,x){return s+(parseFloat(x.valor)||0);},0);return (g.pago===true||g.status==='pago')?gasVal(g):0;}
+  function gStatusOf(g){var p=gParc(g);if(!p.length)return g.status||'apagar';var pago=gPagoAmt(g);if(pago<=0.001)return 'apagar';if(pago>=gasVal(g)-0.001)return 'pago';return 'parcial';}
+  function gEco(g){var vi=parseFloat(g.valorIni)||0;return vi>gasVal(g)?vi-gasVal(g):0;}
+  function gProxVenc(g){var ds=gParc(g).filter(function(x){return !x.paga&&x.venc;}).map(function(x){return x.venc;}).sort();if(!ds.length)return g.venc||'';return fmtBR(ds[0])+(ds.length>1?' +'+(ds.length-1):'');}
+  function moneyIn(v){return (Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function addMonthsISO(iso,n){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);if(!m)return iso;var t=new Date(+m[1],(+m[2]-1)+n,1);var last=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();var day=Math.min(+m[3],last);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');}
+  function curG(id){return gGas().filter(function(x){return String(x.id)===String(id);})[0];}
+  function gastosResumo(){
+    var ativos=gGas().filter(function(g){return !gasCancel(g);});
+    var fechados=ativos.filter(function(g){return gTipoOf(g)==='fechado';});
+    var plan=ativos.filter(function(g){return gTipoOf(g)==='planejado';});
+    var totalFechado=fechados.reduce(function(s,g){return s+gasVal(g);},0);
+    var totalPlan=plan.reduce(function(s,g){return s+(parseFloat(g.valorIni)||gasVal(g));},0);
+    var pago=fechados.reduce(function(s,g){return s+gPagoAmt(g);},0);
+    var economia=ativos.reduce(function(s,g){var vi=parseFloat(g.valorIni)||0;return s+(vi>0?(vi-gasVal(g)):0);},0);
+    return {totalFechado:totalFechado,totalPlan:totalPlan,pago:pago,apagar:totalFechado-pago,projecao:totalFechado+totalPlan,economia:economia,meta:gMeta()};
+  }
+  var gasFiltro='fechado';
   function renderGastos(app){
-    var gas=gGas(),ativos=gas.filter(function(g){return !gasCancel(g);});
-    var total=ativos.reduce(function(s,g){return s+gasVal(g);},0);
-    var pago=ativos.filter(gasPago).reduce(function(s,g){return s+gasVal(g);},0);
-    var meta=gMeta();
-    var pct=meta>0?Math.min(total/meta,1)*100:0;
-    var metaLine=meta>0?(total<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-total)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(total-meta)+'</span>'):'toque em "Meta" pra definir';
-    var rows=gas.map(function(g){
-      var cat=gasCat(g),pg=gasPago(g),canc=gasCancel(g);
-      return '<div class="row"><span class="chk'+(pg?' on':'')+'" data-act="gtog" data-id="'+g.id+'" title="Pago?">'+(pg?'✓':'')+'</span>'+
-        '<div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div><div class="ms">'+(cat?esc(cat)+' · ':'')+(pg?'pago':'a pagar')+(canc?' · cancelado':'')+'</div></div>'+
-        '<div style="text-align:right;flex:0 0 auto"><div style="font-weight:600">'+fmt(gasVal(g))+'</div></div>'+
+    var r=gastosResumo(),meta=r.meta;
+    var pct=meta>0?Math.min(r.projecao/meta,1)*100:0;
+    var metaLine=meta>0?(r.projecao<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-r.projecao)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(r.projecao-meta)+'</span>'):'toque em "Definir meta"';
+    var lista=gGas().filter(function(g){return gasFiltro==='todos'?true:gTipoOf(g)===gasFiltro;});
+    var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
+    var rows=lista.map(function(g){
+      var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g),eco=gEco(g);
+      var right='<div style="font-weight:600">'+fmt(gasVal(g))+'</div>'+(eco>0?'<div class="ms" style="color:#34d399">▼ '+fmt(eco)+'</div>':'');
+      var sub=['<span class="badge" style="background:'+cor+'">'+esc(st)+'</span>'];
+      if(g.empresa||g.categoria)sub.push('<span>'+esc(g.empresa||g.categoria)+'</span>');
+      if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push('<span>'+p.filter(function(x){return x.paga;}).length+'/'+p.length+' pago</span>');var pv=gProxVenc(g);if(pv&&!canc)sub.push('<span>venc '+esc(pv)+'</span>');}
+      return '<div class="row"><div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div>'+
+        '<div class="ms" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;white-space:normal">'+sub.join('<span style="opacity:.35">·</span>')+'</div></div>'+
+        '<div style="text-align:right;flex:0 0 auto">'+right+'</div>'+
+        (tipo==='fechado'?'<button class="ib" data-act="gpag" data-id="'+g.id+'" title="Pagamentos">💳</button>':'')+
         '<button class="ib" data-act="gdel" data-id="'+g.id+'">🗑</button></div>';
     }).join('');
+    var emptyTxt=gasFiltro==='planejado'?'Nada em planejamento ainda.':gasFiltro==='fechado'?'Nenhum gasto fechado ainda.':'Nenhum gasto lançado.';
     app.innerHTML=
-      '<div class="card"><div class="totbar"><div><div class="mini">Total lançado</div><div class="v">'+fmt(total)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
+      '<div class="card"><div class="totbar"><div><div class="mini">Projeção</div><div class="v">'+fmt(r.projecao)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
         '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
-        '<div class="mini" style="margin-top:8px">Pago '+fmt(pago)+' · '+metaLine+'</div>'+
+        '<div class="mini" style="margin-top:8px">'+metaLine+(r.economia>0?' · <span style="color:#34d399">economizou '+fmt(r.economia)+'</span>':'')+'</div>'+
         '<button class="btn soft" data-act="gmeta" style="margin-top:12px">Definir meta</button></div>'+
+      '<div class="statgrid">'+
+        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#4a90d9">'+fmt(r.totalFechado)+'</div><div class="l">Fechado</div></div>'+
+        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#34d399">'+fmt(r.pago)+'</div><div class="l">Pago</div></div>'+
+        '<div class="stat"><div class="n" style="font-size:1.1rem;color:'+(r.apagar>0.01?'#d2533f':'#34d399')+'">'+fmt(r.apagar)+'</div><div class="l">A pagar</div></div>'+
+        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#a78bfa">'+fmt(r.totalPlan)+'</div><div class="l">Planejado</div></div>'+
+      '</div>'+
       '<button class="btn" data-act="gadd" style="margin-top:14px">＋ Novo gasto</button>'+
-      (gas.length?'<div class="card">'+rows+'</div>':'<div class="card"><div class="empty">Nenhum gasto lançado ainda.</div></div>');
+      seg+
+      (lista.length?'<div class="card">'+rows+'</div>':'<div class="card"><div class="empty">'+emptyTxt+'</div></div>');
   }
   function formGasto(g){
     g=g||{};
+    var cur=g.id?casStatusOf(g):'Não iniciado';
+    var stOpts=CAS_STATUS.map(function(s){return '<option'+(s===cur?' selected':'')+'>'+esc(s)+'</option>';}).join('');
     openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:10px">'+(g.id?'Editar gasto':'Novo gasto')+'</h2>'+
       '<label class="fl">Descrição</label><input class="f" id="gDesc" value="'+esc(g.desc||'')+'" placeholder="Ex.: Buffet">'+
-      '<label class="fl">Categoria / fornecedor</label><input class="f" id="gCat" value="'+esc(gasCat(g))+'" placeholder="Ex.: Espaço, Fotos…">'+
-      '<label class="fl">Valor (R$)</label><input class="f" id="gVal" inputmode="decimal" value="'+(g.valor?String(g.valor).replace('.',','):'')+'" placeholder="0,00">'+
-      '<label class="checkline"><span class="chk'+(gasPago(g)?' on':'')+'" id="gPago" data-on="'+(gasPago(g)?'1':'0')+'">'+(gasPago(g)?'✓':'')+'</span> Já pago</label>'+
-      '<button class="btn" data-act="gsave" data-id="'+(g.id||'')+'">Salvar</button>'+
+      '<label class="fl">Status</label><select class="f" id="gStatus">'+stOpts+'</select>'+
+      '<div class="mini" style="margin:-4px 0 10px">Contratado / Em andamento / Finalizado vão pra <b>Fechados</b>. Os demais ficam em <b>Planejando</b>.</div>'+
+      '<label class="fl">Fornecedor / empresa</label><input class="f" id="gEmp" value="'+esc(g.empresa||g.categoria||'')+'" placeholder="Ex.: Espaço Jardim">'+
+      '<label class="fl">Valor orçado (opcional — pra ver economia)</label><input class="f" id="gVi" inputmode="decimal" value="'+(g.valorIni?moneyIn(g.valorIni):'')+'" placeholder="0,00">'+
+      '<label class="fl">Valor final (R$)</label><input class="f" id="gVal" inputmode="decimal" value="'+(g.valor?moneyIn(g.valor):'')+'" placeholder="0,00">'+
+      '<label class="fl">Observação</label><input class="f" id="gObs" value="'+esc(g.obs||'')+'" placeholder="opcional">'+
+      (g.id&&gTipoOf(g)==='fechado'?'<button class="btn soft" data-act="gpag" data-id="'+g.id+'" style="margin-top:2px">💳 Pagamentos / parcelas</button>':'')+
+      '<button class="btn" data-act="gsave" data-id="'+(g.id||'')+'" style="margin-top:8px">Salvar</button>'+
       (g.id?'<button class="btn soft" data-act="gdel" data-id="'+g.id+'" style="margin-top:8px">Excluir</button>':''));
   }
   function saveGasto(id){
     var desc=($('#gDesc').value||'').trim();if(!desc){$('#gDesc').focus();return;}
-    var cat=($('#gCat').value||'').trim(),valor=pm($('#gVal').value),pago=$('#gPago').getAttribute('data-on')==='1';
+    var statusForn=$('#gStatus').value,emp=($('#gEmp').value||'').trim(),obs=($('#gObs').value||'').trim();
+    var valor=pm($('#gVal').value),valorIni=pm($('#gVi').value),tipo=casStatusTipo(statusForn),cancel=(statusForn==='Cancelado');
     var arr=gGas().slice();
-    if(id){var g=arr.filter(function(x){return String(x.id)===String(id);})[0];if(g){g.desc=desc;g.categoria=cat;g.empresa=cat;g.valor=valor;g.pago=pago;if(Array.isArray(g.parcelas))delete g.parcelas;g.status=pago?'pago':'apagar';}}
-    else{arr.push({id:nid(),data:new Date().toLocaleDateString('pt-BR'),desc:desc,categoria:cat,empresa:cat,valor:valor,pago:pago,status:pago?'pago':'apagar'});}
+    if(id){
+      var g=arr.filter(function(x){return String(x.id)===String(id);})[0];
+      if(g){
+        g.desc=desc;g.statusForn=statusForn;g.empresa=emp;g.categoria=emp;g.obs=obs;g.valor=valor;g.valorIni=valorIni;g.tipo=tipo;g.cancelado=cancel;
+        if(tipo==='fechado'&&!gParc(g).length)g.parcelas=[{label:'Parcela 1',valor:valor,paga:false}];
+        if(tipo==='planejado'&&gParc(g).length&&!gParc(g).some(function(p){return p.paga;}))g.parcelas=[];
+        if('pago' in g)delete g.pago;
+        g.status=gStatusOf(g);
+      }
+    }else{
+      var ng={id:nid(),data:new Date().toLocaleDateString('pt-BR'),desc:desc,statusForn:statusForn,empresa:emp,categoria:emp,obs:obs,valor:valor,valorIni:valorIni,tipo:tipo,cancelado:cancel,parcelas:[],status:'apagar'};
+      if(tipo==='fechado')ng.parcelas=[{label:'Parcela 1',valor:valor,paga:false}];
+      arr.push(ng);
+    }
     save('gastos',arr);closeForm();render();
   }
+  /* ---- editor de pagamentos / parcelas ---- */
+  var pagEditId=null;
+  function parcRow(p,i){
+    return '<div class="parc">'+
+      '<input class="pf pl" placeholder="Parcela '+(i+1)+'" value="'+esc(p.label||'')+'">'+
+      '<input class="pf pv" inputmode="decimal" value="'+moneyIn(p.valor||0)+'">'+
+      '<input class="pf pd" type="date" value="'+esc(p.venc||'')+'">'+
+      '<span class="chk pk'+(p.paga?' on':'')+'" data-act="gptog" title="Paga?">'+(p.paga?'✓':'')+'</span>'+
+      '<button class="ib" data-act="gprem" title="Remover">✕</button></div>';
+  }
+  function formPagamento(id){
+    var g=curG(id);if(!g)return;pagEditId=g.id;
+    var p=gParc(g);if(!p.length)p=[{label:'',valor:gasVal(g),paga:(g.status==='pago'||g.pago===true)}];
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:4px">💳 Pagamentos</h2>'+
+      '<div class="mini" style="margin-bottom:8px">'+esc(g.desc)+' · total '+fmt(gasVal(g))+'</div>'+
+      '<div id="parcWrap">'+p.map(function(x,i){return parcRow(x,i);}).join('')+'</div>'+
+      '<div class="addbar" style="margin-top:8px"><button class="btn soft" data-act="gpadd" style="flex:1">＋ parcela</button><button class="btn soft" data-act="gpdiv" style="flex:1">÷ dividir igual</button></div>'+
+      '<div class="card" style="margin-top:10px;padding:12px">'+
+        '<div class="fl" style="margin-top:0">Gerar automático</div>'+
+        '<div class="addbar"><input class="f" id="gpEnt" inputmode="decimal" placeholder="entrada R$" style="flex:1"><input class="f" id="gpN" inputmode="numeric" placeholder="nº parcelas" style="flex:0 0 108px"></div>'+
+        '<button class="btn soft" data-act="gpgen">Gerar entrada + parcelas</button>'+
+        '<button class="btn soft" data-act="gpdatas" style="margin-top:6px">📅 Datas mês a mês (a partir da 1ª)</button>'+
+      '</div>'+
+      '<div id="gpResumo" class="mini" style="margin-top:10px"></div>'+
+      '<button class="btn" data-act="gpsave" data-id="'+g.id+'" style="margin-top:8px">Salvar pagamentos</button>');
+    gpCalc();
+  }
+  function gpRows(){return [].slice.call(document.querySelectorAll('#parcWrap .parc'));}
+  function gpCalc(){
+    var g=curG(pagEditId);if(!g)return;var t=gasVal(g),soma=0,pago=0;
+    gpRows().forEach(function(r){var v=pm(r.querySelector('.pv').value);soma+=v;if(r.querySelector('.pk').classList.contains('on'))pago+=v;});
+    var diff=Math.round((soma-t)*100)/100;
+    var conf=Math.abs(diff)<=0.01?'<span style="color:#34d399">✓ confere com o total</span>':'<span style="color:#fbbf24">⚠ difere '+fmt(Math.abs(diff))+(diff>0?' a mais':' a menos')+'</span>';
+    var el=$('#gpResumo');if(el)el.innerHTML='<b>Soma:</b> '+fmt(soma)+' · '+conf+'<br><b>Pago:</b> '+fmt(pago)+' · restante '+fmt(Math.max(0,soma-pago));
+  }
+  function gpDividir(){var g=curG(pagEditId);if(!g)return;var t=gasVal(g),rows=gpRows(),n=rows.length;if(!n)return;var base=Math.round(t/n*100)/100,acc=0;rows.forEach(function(r,i){var v=(i===n-1)?Math.round((t-acc)*100)/100:base;acc+=base;r.querySelector('.pv').value=moneyIn(v);});gpCalc();}
+  function gpGerar(){var g=curG(pagEditId);if(!g)return;var t=gasVal(g),ent=pm($('#gpEnt').value),n=Math.max(0,parseInt($('#gpN').value)||0),rows=[];if(ent>0.001)rows.push({label:'Entrada',valor:ent,paga:false});var rest=Math.max(0,t-ent);if(n>0){var base=Math.round(rest/n*100)/100,acc=0;for(var i=0;i<n;i++){var v=(i===n-1)?Math.round((rest-acc)*100)/100:base;acc+=base;rows.push({label:'Parcela '+(i+1),valor:v,paga:false});}}else if(ent<=0.001){rows.push({label:'Parcela 1',valor:t,paga:false});}$('#parcWrap').innerHTML=rows.map(function(p,i){return parcRow(p,i);}).join('');gpCalc();}
+  function gpDatas(){var rows=gpRows();if(rows.length<2){toast('Adicione mais parcelas primeiro');return;}var first=rows[0].querySelector('.pd').value;if(!first){toast('Preencha a data da 1ª parcela');rows[0].querySelector('.pd').focus();return;}rows.forEach(function(r,i){if(i>0)r.querySelector('.pd').value=addMonthsISO(first,i);});toast('Datas a cada mês ✓');}
+  function gpSalvar(id){var arr=gGas().slice();var g=arr.filter(function(x){return String(x.id)===String(id);})[0];if(!g)return;g.parcelas=gpRows().map(function(r){return {label:(r.querySelector('.pl').value||'').trim(),valor:pm(r.querySelector('.pv').value),venc:r.querySelector('.pd').value,paga:r.querySelector('.pk').classList.contains('on')};});if('pago' in g)delete g.pago;g.status=gStatusOf(g);save('gastos',arr);closeForm();render();}
 
   /* ---------- Checklist ---------- */
   function renderChecklist(app){
@@ -514,11 +616,20 @@
     if(act==='tsave'){saveTarefa(id);return;}
     // gastos
     if(act==='gadd'){formGasto(null);return;}
-    if(act==='gedit'){var g=gGas().filter(function(x){return String(x.id)===String(id);})[0];if(g)formGasto(g);return;}
-    if(act==='gtog'){var ga=gGas().slice();var gg=ga.filter(function(x){return String(x.id)===String(id);})[0];if(gg){var np=!gasPago(gg);gg.pago=np;if(Array.isArray(gg.parcelas))delete gg.parcelas;gg.status=np?'pago':'apagar';save('gastos',ga);render();}return;}
+    if(act==='gedit'){var g=curG(id);if(g)formGasto(g);return;}
+    if(act==='gfil'){gasFiltro=v;render();return;}
     if(act==='gdel'){if(confirm('Excluir gasto?')){save('gastos',gGas().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
     if(act==='gsave'){saveGasto(id);return;}
     if(act==='gmeta'){var m=prompt('Meta de gastos (R$):',gMeta()||'');if(m===null)return;save('meta',pm(m));render();return;}
+    // gastos — pagamentos / parcelas
+    if(act==='gpag'){formPagamento(id);return;}
+    if(act==='gptog'){var on=el.classList.toggle('on');el.textContent=on?'✓':'';gpCalc();return;}
+    if(act==='gprem'){var pr=el.closest('.parc');if(pr&&pr.parentNode){pr.parentNode.removeChild(pr);gpCalc();}return;}
+    if(act==='gpadd'){var w=$('#parcWrap');if(w){w.insertAdjacentHTML('beforeend',parcRow({label:'',valor:0,paga:false},w.querySelectorAll('.parc').length));gpCalc();}return;}
+    if(act==='gpdiv'){gpDividir();return;}
+    if(act==='gpgen'){gpGerar();return;}
+    if(act==='gpdatas'){gpDatas();return;}
+    if(act==='gpsave'){gpSalvar(id);return;}
     // checklist
     if(act==='clas'){var nome=prompt('Nome da seção:');if(!nome)return;var cl=gChk();cl.sections.push({id:'cs'+nid(),name:nome.trim(),open:true,items:[]});save('checklist',cl);render();return;}
     if(act==='clto'){var cl2=gChk();var s=cl2.sections.filter(function(x){return x.id===sid;})[0];if(s){s.open=(s.open===false);save('checklist',cl2);render();}return;}
@@ -565,6 +676,7 @@
   $('#backBtn').addEventListener('click',function(){go('home');});
   $('#fBg').addEventListener('click',closeForm);
   document.addEventListener('click',onAppClick);
+  document.addEventListener('input',function(e){if(e.target&&e.target.closest&&e.target.closest('#parcWrap'))gpCalc();});
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
 
