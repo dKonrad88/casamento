@@ -466,7 +466,10 @@
     var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
     var rows=lista.map(function(g){
       var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g),eco=gEco(g);
-      var right='<div style="font-weight:600">'+fmt(gasVal(g))+'</div>'+(eco>0?'<div class="ms" style="color:#34d399">▼ '+fmt(eco)+'</div>':'');
+      var vi=parseFloat(g.valorIni)||0;
+      var right=(vi>0?'<div class="ms" style="text-decoration:line-through;opacity:.65">'+fmt(vi)+'</div>':'')+
+        '<div style="font-weight:600">'+fmt(gasVal(g))+'</div>'+
+        (eco>0?'<div class="ms" style="color:#34d399">▼ '+fmt(eco)+'</div>':'');
       var sub=['<span class="badge" style="background:'+cor+'">'+esc(st)+'</span>'];
       if(g.empresa||g.categoria)sub.push('<span>'+esc(g.empresa||g.categoria)+'</span>');
       if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push('<span>'+p.filter(function(x){return x.paga;}).length+'/'+p.length+' pago</span>');var pv=gProxVenc(g);if(pv&&!canc)sub.push('<span>venc '+esc(pv)+'</span>');}
