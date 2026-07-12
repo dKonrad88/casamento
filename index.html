@@ -457,13 +457,19 @@
     var economia=ativos.reduce(function(s,g){var vi=parseFloat(g.valorIni)||0;return s+(vi>0?(vi-gasVal(g)):0);},0);
     return {totalFechado:totalFechado,totalPlan:totalPlan,pago:pago,apagar:totalFechado-pago,projecao:totalFechado+totalPlan,economia:economia,meta:gMeta()};
   }
-  var gasFiltro='fechado';
-  function renderGastos(app){
-    var r=gastosResumo(),meta=r.meta;
-    var pct=meta>0?Math.min(r.projecao/meta,1)*100:0;
-    var metaLine=meta>0?(r.projecao<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-r.projecao)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(r.projecao-meta)+'</span>'):'toque em "Definir meta"';
-    var lista=gGas().filter(function(g){return gasFiltro==='todos'?true:gTipoOf(g)===gasFiltro;});
-    var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
+  var gasFiltro='fechado', gasBusca='';
+  function gastosListaHTML(){
+    var q=(gasBusca||'').trim().toLowerCase();
+    var lista=gGas().filter(function(g){
+      if(gasFiltro!=='todos'&&gTipoOf(g)!==gasFiltro)return false;
+      if(q){var hay=((g.desc||'')+' '+(g.empresa||g.categoria||'')).toLowerCase();if(hay.indexOf(q)<0)return false;}
+      return true;
+    });
+    lista.sort(function(a,b){return String(a.desc||'').localeCompare(String(b.desc||''),'pt',{sensitivity:'base'});});
+    if(!lista.length){
+      var emptyTxt=q?('Nenhum gasto encontrado para “'+esc(gasBusca.trim())+'”.'):(gasFiltro==='planejado'?'Nada em planejamento ainda.':gasFiltro==='fechado'?'Nenhum gasto fechado ainda.':'Nenhum gasto lançado.');
+      return '<div class="card"><div class="empty">'+emptyTxt+'</div></div>';
+    }
     var rows=lista.map(function(g){
       var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g);
       var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);
@@ -480,7 +486,13 @@
         (tipo==='fechado'?'<button class="ib" data-act="gpag" data-id="'+g.id+'" title="Pagamentos">💳</button>':'')+
         '<button class="ib" data-act="gdel" data-id="'+g.id+'">🗑</button></div>';
     }).join('');
-    var emptyTxt=gasFiltro==='planejado'?'Nada em planejamento ainda.':gasFiltro==='fechado'?'Nenhum gasto fechado ainda.':'Nenhum gasto lançado.';
+    return '<div class="card">'+rows+'</div>';
+  }
+  function renderGastos(app){
+    var r=gastosResumo(),meta=r.meta;
+    var pct=meta>0?Math.min(r.projecao/meta,1)*100:0;
+    var metaLine=meta>0?(r.projecao<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-r.projecao)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(r.projecao-meta)+'</span>'):'toque em "Definir meta"';
+    var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
     app.innerHTML=
       '<div class="card"><div class="totbar"><div><div class="mini">Projeção</div><div class="v">'+fmt(r.projecao)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
         '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
@@ -494,7 +506,8 @@
       '</div>'+
       '<button class="btn" data-act="gadd" style="margin-top:14px">＋ Novo gasto</button>'+
       seg+
-      (lista.length?'<div class="card">'+rows+'</div>':'<div class="card"><div class="empty">'+emptyTxt+'</div></div>');
+      '<input class="f" id="gasBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="🔍 Buscar por nome ou fornecedor…" value="'+esc(gasBusca)+'" style="margin-bottom:0">'+
+      '<div id="gasList">'+gastosListaHTML()+'</div>';
   }
   function formGasto(g){
     g=g||{};
@@ -680,7 +693,11 @@
   $('#backBtn').addEventListener('click',function(){go('home');});
   $('#fBg').addEventListener('click',closeForm);
   document.addEventListener('click',onAppClick);
-  document.addEventListener('input',function(e){if(e.target&&e.target.closest&&e.target.closest('#parcWrap'))gpCalc();});
+  document.addEventListener('input',function(e){
+    if(!e.target)return;
+    if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
+    if(e.target.closest&&e.target.closest('#parcWrap'))gpCalc();
+  });
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
 
