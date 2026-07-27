@@ -474,7 +474,7 @@
       var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g);
       var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);
       var realEco=(vf>0&&vi>vf)?(vi-vf):0;
-      var right=(vi>0?'<div class="ms" style="opacity:.8">inicial '+fmt(vi)+'</div>':'')+
+      var right=(vi>0?'<div class="ms" style="color:#4a90d9;font-weight:500">inicial '+fmt(vi)+'</div>':'')+
         '<div style="font-weight:600">'+(vi>0?'<span class="ms" style="font-weight:400;opacity:.8">final </span>':'')+fmt(vf)+'</div>'+
         (realEco>0?'<div class="ms" style="color:#34d399">▼ economia '+fmt(realEco)+'</div>':'');
       var sub=['<span class="badge" style="background:'+cor+'">'+esc(st)+'</span>'];
