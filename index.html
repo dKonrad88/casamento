@@ -34,6 +34,7 @@
   .wrap::-webkit-scrollbar{display:none}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
   .card h2{font-size:1rem;font-weight:600;margin-bottom:.3rem}
+  .grp{font-family:'Playfair Display',serif;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:8px;margin-bottom:.4rem}
   .sub{font-size:.85rem;color:var(--muted)}
   input.f{width:100%;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:11px;padding:12px 14px;font-size:1rem;font-family:inherit;outline:none;margin-bottom:10px}
   input.f:focus{border-color:var(--primary2)}
@@ -295,7 +296,7 @@
       var alvo=new Date(d+'T00:00:00');
       dateLine=cap1(alvo.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}))+' · '+alvo.toLocaleDateString('pt-BR',{weekday:'long'});
       dateAttr='';
-      var heart='<svg viewBox="0 0 24 24" width="30" height="30" fill="currentColor" style="color:var(--gold)" aria-hidden="true"><path d="M12 21s-7-4.6-9.3-9C1.4 9 2.8 5.5 6 5.5c1.9 0 3.1 1 4 2.2.9-1.2 2.1-2.2 4-2.2 3.2 0 4.6 3.5 3.3 6.5C19 16.4 12 21 12 21z"/></svg>';
+      var heart='<svg viewBox="0 0 24 24" width="30" height="30" fill="#8fb3d6" aria-hidden="true" style="flex:0 0 auto;overflow:visible"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
       if(cd){
         if(cd.dias>0)cdCard='<div class="cdcard" data-act="go" data-v="inicio"><div><div class="cdnum">'+cd.dias+'</div><div class="cdlbl">dias para o grande dia</div></div>'+heart+'</div>';
         else cdCard='<div class="cdcard" data-act="go" data-v="inicio"><div class="cdnum" style="font-size:1.5rem">'+(cd.dias===0?'É hoje 💍':'Já casaram 🎉')+'</div>'+heart+'</div>';
@@ -395,19 +396,16 @@
   }
 
   /* ---------- Convidados ---------- */
-  var convFilter='all';
-  function renderConvidados(app){
-    var conv=gConv();
-    var tot=conv.reduce(function(s,c){return s+qtd(c);},0);
-    var conf=conv.filter(function(c){return effStatus(c)==='confirmado';}).reduce(function(s,c){return s+qtd(c);},0);
-    var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
-    var rec=conv.filter(function(c){return effStatus(c)==='recusado';}).reduce(function(s,c){return s+qtd(c);},0);
-    var segs=[['all','Todos'],['confirmado','Confirmados'],['pendente','Pendentes'],['recusado','Recusaram']].concat(NIVEIS.map(function(n){return [n[0],n[1]];}));
-    var seg='<div class="seg">'+segs.map(function(s){return '<button data-act="cfil" data-v="'+s[0]+'"'+(convFilter===s[0]?' class="on"':'')+'>'+esc(s[1])+'</button>';}).join('')+'</div>';
+  var convFilter='all', convBusca='';
+  function convListaHTML(){
+    var conv=gConv(),q=(convBusca||'').trim().toLowerCase();
     var isStatus=(convFilter==='confirmado'||convFilter==='pendente'||convFilter==='recusado');
     var isNivel=NIVEIS.some(function(n){return n[0]===convFilter;});
-    var list=conv.filter(function(c){if(convFilter==='all')return true;if(isStatus)return effStatus(c)===convFilter;if(isNivel)return c.nivel===convFilter;return true;});
-    // agrupa por nível
+    var list=conv.filter(function(c){
+      if(!(convFilter==='all'||(isStatus&&effStatus(c)===convFilter)||(isNivel&&c.nivel===convFilter)))return false;
+      if(q){var hay=((c.nome||'')+' '+(c.conjuge||'')).toLowerCase();if(hay.indexOf(q)<0)return false;}
+      return true;
+    });
     var body='';
     NIVEIS.forEach(function(n){
       var g=list.filter(function(c){return c.nivel===n[0];});
@@ -416,23 +414,34 @@
         var st=effStatus(c),casal=c.conjuge&&c.conjuge.trim();
         return '<div class="row">'+
           '<span class="dot" style="background:'+n[2]+'"></span>'+
-          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt">'+esc(c.nome)+(casal?' <span class="mini">+ '+esc(c.conjuge)+'</span>':'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑 padrinho':'')+'</div></div>'+
+          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt">'+esc(c.nome)+(casal?' <span class="mini">+ '+esc(c.conjuge)+'</span>':'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑':'')+'</div></div>'+
           '<div class="rsvp"><button class="yes'+(st==='confirmado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="confirmado" title="Confirmou">✓</button>'+
           '<button class="no'+(st==='recusado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="recusado" title="Recusou">✕</button></div>'+
           '<button class="ib" data-act="cdel" data-id="'+c.id+'">🗑</button></div>';
       }).join('');
-      body+='<div class="card"><h2 style="display:flex;align-items:center;gap:8px"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
+      body+='<div class="card"><h2 class="grp"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
     });
-    if(!body)body='<div class="card"><div class="empty">Ninguém neste filtro.<br>Toque em "＋ Adicionar" pra começar.</div></div>';
+    if(!body)body='<div class="card"><div class="empty">'+(q?('Ninguém encontrado para “'+esc(convBusca.trim())+'”.'):'Ninguém neste filtro.')+'</div></div>';
+    return body;
+  }
+  function renderConvidados(app){
+    var conv=gConv();
+    var tot=conv.reduce(function(s,c){return s+qtd(c);},0);
+    var conf=conv.filter(function(c){return effStatus(c)==='confirmado';}).reduce(function(s,c){return s+qtd(c);},0);
+    var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
+    var rec=conv.filter(function(c){return effStatus(c)==='recusado';}).reduce(function(s,c){return s+qtd(c);},0);
+    var pct=tot?Math.round(conf/tot*100):0;
+    var segs=[['all','Todos'],['confirmado','Confirmados'],['pendente','Pendentes'],['recusado','Recusaram']].concat(NIVEIS.map(function(n){return [n[0],n[1]];}));
+    var seg='<div class="seg">'+segs.map(function(s){return '<button data-act="cfil" data-v="'+s[0]+'"'+(convFilter===s[0]?' class="on"':'')+'>'+esc(s[1])+'</button>';}).join('')+'</div>';
     app.innerHTML=
-      '<div class="statgrid">'+
-        '<div class="stat"><div class="n">'+tot+'</div><div class="l">Total pessoas</div></div>'+
-        '<div class="stat"><div class="n" style="color:#34d399">'+conf+'</div><div class="l">Confirmados</div></div>'+
-        '<div class="stat"><div class="n" style="color:#fbbf24">'+pend+'</div><div class="l">Pendentes</div></div>'+
-        '<div class="stat"><div class="n" style="color:#d2533f">'+rec+'</div><div class="l">Recusaram</div></div>'+
-      '</div>'+
+      '<div class="card"><div class="totbar"><div><div class="mini">Confirmados</div><div class="v">'+conf+' <span style="font-size:1rem;font-weight:400;color:var(--muted)">de '+tot+' pessoas</span></div></div>'+
+        '<div style="text-align:right"><div class="mini">Convites</div><div style="font-weight:600">'+conv.length+'</div></div></div>'+
+        '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
+        '<div class="mini" style="margin-top:8px"><span style="color:#c99a2e">'+pend+' pendentes</span> · <span style="color:#c0503f">'+rec+' recusaram</span></div></div>'+
       '<button class="btn" data-act="cadd" style="margin-top:14px">＋ Adicionar convidado</button>'+
-      seg+body;
+      '<input class="f" id="convBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="🔍 Buscar convidado…" value="'+esc(convBusca)+'" style="margin-bottom:0">'+
+      seg+
+      '<div id="convList">'+convListaHTML()+'</div>';
   }
   function formConvidado(c){
     c=c||{};
@@ -760,6 +769,7 @@
   document.addEventListener('input',function(e){
     if(!e.target)return;
     if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
+    if(e.target.id==='convBuscaInput'){convBusca=e.target.value;var ecl=document.getElementById('convList');if(ecl)ecl.innerHTML=convListaHTML();return;}
     if(e.target.closest&&e.target.closest('#parcWrap'))gpCalc();
   });
   sbInit();
