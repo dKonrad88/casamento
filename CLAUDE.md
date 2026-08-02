@@ -60,6 +60,7 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
   - **Swipe** (sem botões fixos): **→ direita** = 💳 pagamentos (só em fechados), **← esquerda** = 🗑 excluir. Limites por linha via `data-swl`/`data-swr` (Gastos 54/-54, Convidados 162/-54).
   - **Valores:** em **fechado**, orçado riscado (só se ≠ do final) + final em Playfair + `▼ economia`; em **planejado**, o `valorIni` É o valor exibido com o rótulo "orçado" — nunca risca nem mostra "R$ 0,00".
   - `gastosResumo().economia` só conta **negociação real** (`vf>0 && vi>vf`) — antes somava o orçado inteiro dos planejados e inflava a economia.
+  - **Campos de dinheiro do editor** (`gVi`/`gVal`): wrapper `.minp` com "R$" fixo + classe `.money` → `maskMoney()` no listener de `input` aplica **máscara de centavos** (só dígitos, preenche da direita pra esquerda). `pm()` continua lendo o texto mascarado. Os campos de parcela (`.pv`, `gpEnt`) **ainda não** têm a máscara.
   - Editor completo (desc/status/empresa/valorIni × valor final/obs) e **editor de pagamentos/parcelas** (`formPagamento`) inalterados. Gasto sem `tipo` conta como **fechado** (regra herdada do HUB).
 - **Tarefas / Checklist:** funcionais (feito/pendente/quem/data; seções colapsáveis com itens). Ainda **não** ganharam o tratamento editorial completo — próximo passo natural.
 
