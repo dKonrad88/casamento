@@ -35,6 +35,12 @@
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
   .card h2{font-size:1rem;font-weight:600;margin-bottom:.3rem}
   .grp{font-family:'Playfair Display',serif;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:8px;margin-bottom:.4rem}
+  .cbar{display:flex;gap:8px;align-items:stretch;margin-top:14px}
+  .cfilter{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:12px;padding:0 12px;font-size:.95rem;font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;height:46px}
+  .cfilter:focus{border-color:var(--primary2)}
+  .ib2{flex:0 0 auto;width:46px;height:46px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);color:var(--ink);font-size:1.25rem;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;padding:0}
+  .ib2.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .ib2.add{color:var(--primary2);font-size:1.55rem}
   .sub{font-size:.85rem;color:var(--muted)}
   input.f{width:100%;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:11px;padding:12px 14px;font-size:1rem;font-family:inherit;outline:none;margin-bottom:10px}
   input.f:focus{border-color:var(--primary2)}
@@ -396,7 +402,7 @@
   }
 
   /* ---------- Convidados ---------- */
-  var convFilter='all', convBusca='';
+  var convFilter='all', convBusca='', convSearchOpen=false;
   function convListaHTML(){
     var conv=gConv(),q=(convBusca||'').trim().toLowerCase();
     var isStatus=(convFilter==='confirmado'||convFilter==='pendente'||convFilter==='recusado');
@@ -431,16 +437,20 @@
     var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
     var rec=conv.filter(function(c){return effStatus(c)==='recusado';}).reduce(function(s,c){return s+qtd(c);},0);
     var pct=tot?Math.round(conf/tot*100):0;
-    var segs=[['all','Todos'],['confirmado','Confirmados'],['pendente','Pendentes'],['recusado','Recusaram']].concat(NIVEIS.map(function(n){return [n[0],n[1]];}));
-    var seg='<div class="seg">'+segs.map(function(s){return '<button data-act="cfil" data-v="'+s[0]+'"'+(convFilter===s[0]?' class="on"':'')+'>'+esc(s[1])+'</button>';}).join('')+'</div>';
+    var opt=function(v,l){return '<option value="'+v+'"'+(convFilter===v?' selected':'')+'>'+esc(l)+'</option>';};
+    var filterSel='<select id="convFilterSel" class="cfilter" aria-label="Filtrar">'+
+      opt('all','Todos os convidados')+
+      '<optgroup label="Status">'+opt('confirmado','Confirmados')+opt('pendente','Pendentes')+opt('recusado','Recusaram')+'</optgroup>'+
+      '<optgroup label="Grupo">'+NIVEIS.map(function(n){return opt(n[0],n[1]);}).join('')+'</optgroup></select>';
     app.innerHTML=
       '<div class="card"><div class="totbar"><div><div class="mini">Confirmados</div><div class="v">'+conf+' <span style="font-size:1rem;font-weight:400;color:var(--muted)">de '+tot+' pessoas</span></div></div>'+
         '<div style="text-align:right"><div class="mini">Convites</div><div style="font-weight:600">'+conv.length+'</div></div></div>'+
         '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
         '<div class="mini" style="margin-top:8px"><span style="color:#c99a2e">'+pend+' pendentes</span> · <span style="color:#c0503f">'+rec+' recusaram</span></div></div>'+
-      '<button class="btn" data-act="cadd" style="margin-top:14px">＋ Adicionar convidado</button>'+
-      '<input class="f" id="convBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="🔍 Buscar convidado…" value="'+esc(convBusca)+'" style="margin-bottom:0">'+
-      seg+
+      '<div class="cbar">'+filterSel+
+        '<button class="ib2'+(convSearchOpen?' on':'')+'" data-act="csearch" aria-label="Buscar">🔍</button>'+
+        '<button class="ib2 add" data-act="cadd" aria-label="Adicionar convidado">＋</button></div>'+
+      (convSearchOpen?'<input class="f" id="convBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="Buscar por nome…" value="'+esc(convBusca)+'" style="margin:10px 0 0">':'')+
       '<div id="convList">'+convListaHTML()+'</div>';
   }
   function formConvidado(c){
@@ -453,18 +463,26 @@
       '<label class="fl">Cônjuge / acompanhante (opcional)</label><input class="f" id="cvConj" value="'+esc(c.conjuge||'')+'" placeholder="+ conta como 2 pessoas">'+
       '<label class="fl">Grupo</label><select class="f" id="cvNivel">'+nivelOpts+'</select>'+
       '<label class="fl">Status</label><select class="f" id="cvSt">'+stOpts+'</select>'+
-      '<label class="checkline"><span class="chk'+(c.padrinho?' on':'')+'" id="cvPad" data-on="'+(c.padrinho?'1':'0')+'">'+(c.padrinho?'✓':'')+'</span> Padrinho / madrinha</label>'+
+      '<label class="checkline"><span class="chk'+(c.padrinho?' on':'')+'" id="cvPad" data-act="chktog" data-on="'+(c.padrinho?'1':'0')+'">'+(c.padrinho?'✓':'')+'</span> Padrinho / madrinha</label>'+
+      (c.id?'<button class="btn soft" data-act="clinkpick" data-id="'+c.id+'" style="margin-bottom:8px">🔗 Formar casal com alguém da lista</button>':'')+
       '<button class="btn" data-act="csave" data-id="'+(c.id||'')+'">Salvar</button>'+
       (c.id?'<button class="btn soft" data-act="cdel" data-id="'+c.id+'" style="margin-top:8px">Excluir</button>':''));
   }
-  function saveConvidado(id){
-    var nome=($('#cvNome').value||'').trim();if(!nome){$('#cvNome').focus();return;}
+  function persistConvidado(id){
+    var nome=($('#cvNome').value||'').trim();if(!nome){$('#cvNome').focus();return false;}
     var conj=($('#cvConj').value||'').trim();
     var nivel=$('#cvNivel').value,st=$('#cvSt').value,pad=$('#cvPad').getAttribute('data-on')==='1';
     var arr=gConv().slice();
     if(id){var c=arr.filter(function(x){return String(x.id)===String(id);})[0];if(c){c.nome=nome;c.conjuge=conj;c.nivel=nivel;c.status=st;c.qtd=conj?2:1;c.padrinho=pad;}}
     else{arr.push({id:nid(),nome:nome,conjuge:conj,nivel:nivel,status:st,qtd:conj?2:1,padrinho:pad});}
-    save('convidados',arr);closeForm();render();
+    save('convidados',arr);return true;
+  }
+  function saveConvidado(id){if(persistConvidado(id)!==false){closeForm();render();}}
+  function clinkPicker(id){
+    var others=gConv().filter(function(c){return String(c.id)!==String(id);});
+    others.sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'pt',{sensitivity:'base'});});
+    var rows=others.map(function(c){return '<button class="mitem" data-act="clink" data-id="'+id+'" data-p="'+c.id+'"><span class="mic">👤</span> '+esc(c.nome)+(c.conjuge?' <span class="mini">(+ '+esc(c.conjuge)+')</span>':'')+'</button>';}).join('');
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Formar casal</h2><div class="sub" style="margin-bottom:8px">Escolha quem forma o casal. Os dois viram um convite só (2 pessoas), e a outra pessoa sai da lista.</div>'+(rows||'<div class="empty">Ninguém mais na lista.</div>'));
   }
 
   /* ---------- Tarefas ---------- */
@@ -491,7 +509,7 @@
       '<label class="fl">Tarefa</label><input class="f" id="tTit" value="'+esc(t.titulo||'')+'" placeholder="O que fazer">'+
       '<label class="fl">Responsável</label><input class="f" id="tQuem" value="'+esc(t.quem||'')+'" placeholder="Quem?">'+
       '<label class="fl">Data</label><input class="f" id="tData" type="date" value="'+esc(t.data||'')+'">'+
-      '<label class="checkline"><span class="chk'+(t.done?' on':'')+'" id="tDone" data-on="'+(t.done?'1':'0')+'">'+(t.done?'✓':'')+'</span> Concluída</label>'+
+      '<label class="checkline"><span class="chk'+(t.done?' on':'')+'" id="tDone" data-act="chktog" data-on="'+(t.done?'1':'0')+'">'+(t.done?'✓':'')+'</span> Concluída</label>'+
       '<button class="btn" data-act="tsave" data-id="'+(t.id||'')+'">Salvar</button>'+
       (t.id?'<button class="btn soft" data-act="tdel" data-id="'+t.id+'" style="margin-top:8px">Excluir</button>':''));
   }
@@ -693,9 +711,12 @@
     if(act==='cadd'){formConvidado(null);return;}
     if(act==='cedit'){var c=gConv().filter(function(x){return String(x.id)===String(id);})[0];if(c)formConvidado(c);return;}
     if(act==='cfil'){convFilter=v;render();return;}
+    if(act==='csearch'){convSearchOpen=!convSearchOpen;if(!convSearchOpen)convBusca='';render();if(convSearchOpen){var si=$('#convBuscaInput');if(si)si.focus();}return;}
     if(act==='cst'){var arr=gConv().slice();var c=arr.filter(function(x){return String(x.id)===String(id);})[0];if(c){c.status=(effStatus(c)===v?'pendente':v);save('convidados',arr);render();}return;}
     if(act==='cdel'){var nm=(gConv().filter(function(x){return String(x.id)===String(id);})[0]||{}).nome||'convidado';if(confirm('Excluir "'+nm+'"?')){save('convidados',gConv().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
     if(act==='csave'){saveConvidado(id);return;}
+    if(act==='clinkpick'){if(persistConvidado(id)!==false)clinkPicker(id);return;}
+    if(act==='clink'){var lpid=el.getAttribute('data-p');var lar=gConv().slice();var lself=lar.filter(function(x){return String(x.id)===String(id);})[0];var lp=lar.filter(function(x){return String(x.id)===String(lpid);})[0];if(lself&&lp){lself.conjuge=lp.nome+(lp.conjuge?(' e '+lp.conjuge):'');lself.qtd=2;lar=lar.filter(function(x){return String(x.id)!==String(lpid);});save('convidados',lar);}closeForm();render();try{toast('Casal formado ✓');}catch(e){}return;}
     // tarefas
     if(act==='tadd'){formTarefa(null);return;}
     if(act==='tedit'){var t=gTar().filter(function(x){return String(x.id)===String(id);})[0];if(t)formTarefa(t);return;}
@@ -727,7 +748,7 @@
     if(act==='cli'){var cl6=gChk();var s6=cl6.sections.filter(function(x){return x.id===sid;})[0];var i6=s6&&(s6.items||[]).filter(function(x){return x.id===iid;})[0];if(i6){var nv=prompt('Editar item:',i6.text);if(nv!==null){nv=nv.trim();if(nv){i6.text=nv;save('checklist',cl6);render();}}}return;}
     if(act==='clai'){var inp=$('#cli-'+CSS.escape(sid));var txt=inp?(inp.value||'').trim():'';if(!txt)return;var cl7=gChk();var s7=cl7.sections.filter(function(x){return x.id===sid;})[0];if(s7){(s7.items=s7.items||[]).push({id:'ci'+nid(),text:txt,done:false});save('checklist',cl7);render();}return;}
     // form chk toggles
-    if(el.classList.contains('chk')&&(el.id==='cvPad'||el.id==='tDone'||el.id==='gPago')){var on=el.getAttribute('data-on')==='1';el.setAttribute('data-on',on?'0':'1');el.classList.toggle('on',!on);el.textContent=on?'':'✓';return;}
+    if(act==='chktog'){var on=el.getAttribute('data-on')==='1';el.setAttribute('data-on',on?'0':'1');el.classList.toggle('on',!on);el.textContent=on?'':'✓';return;}
   }
   function pedirData(){var v=prompt('Data do casamento (AAAA-MM-DD):',gData()||'');if(v===null)return;v=String(v).trim();if(v&&!/^\d{4}-\d{2}-\d{2}$/.test(v)){toast('Use AAAA-MM-DD, ex: 2027-05-15');return;}save('data',v);render();}
 
@@ -770,7 +791,11 @@
     if(!e.target)return;
     if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
     if(e.target.id==='convBuscaInput'){convBusca=e.target.value;var ecl=document.getElementById('convList');if(ecl)ecl.innerHTML=convListaHTML();return;}
+    if(e.target.id==='convFilterSel'){convFilter=e.target.value;var ecf=document.getElementById('convList');if(ecf)ecf.innerHTML=convListaHTML();return;}
     if(e.target.closest&&e.target.closest('#parcWrap'))gpCalc();
+  });
+  document.addEventListener('change',function(e){
+    if(e.target&&e.target.id==='convFilterSel'){convFilter=e.target.value;var el=document.getElementById('convList');if(el)el.innerHTML=convListaHTML();}
   });
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
