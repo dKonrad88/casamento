@@ -478,11 +478,25 @@
     save('convidados',arr);return true;
   }
   function saveConvidado(id){if(persistConvidado(id)!==false){closeForm();render();}}
-  function clinkPicker(id){
-    var others=gConv().filter(function(c){return String(c.id)!==String(id);});
+  var clinkForId=null, clinkBusca='';
+  function clinkRowsHTML(){
+    var id=clinkForId,q=(clinkBusca||'').trim().toLowerCase();
+    var others=gConv().filter(function(c){
+      if(String(c.id)===String(id))return false;
+      if(c.conjuge&&c.conjuge.trim())return false;
+      if(q&&String(c.nome||'').toLowerCase().indexOf(q)<0)return false;
+      return true;
+    });
     others.sort(function(a,b){return String(a.nome||'').localeCompare(String(b.nome||''),'pt',{sensitivity:'base'});});
-    var rows=others.map(function(c){return '<button class="mitem" data-act="clink" data-id="'+id+'" data-p="'+c.id+'"><span class="mic">👤</span> '+esc(c.nome)+(c.conjuge?' <span class="mini">(+ '+esc(c.conjuge)+')</span>':'')+'</button>';}).join('');
-    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Formar casal</h2><div class="sub" style="margin-bottom:8px">Escolha quem forma o casal. Os dois viram um convite só (2 pessoas), e a outra pessoa sai da lista.</div>'+(rows||'<div class="empty">Ninguém mais na lista.</div>'));
+    if(!others.length)return '<div class="empty">'+(q?('Ninguém encontrado para “'+esc(clinkBusca.trim())+'”.'):'Ninguém sem par na lista.')+'</div>';
+    return others.map(function(c){return '<button class="mitem" data-act="clink" data-id="'+id+'" data-p="'+c.id+'"><span class="mic">👤</span> '+esc(c.nome)+'</button>';}).join('');
+  }
+  function clinkPicker(id){
+    clinkForId=id;clinkBusca='';
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:4px">Formar casal</h2><div class="sub" style="margin-bottom:8px">Escolha o par. Os dois viram um convite só (2 pessoas), e a outra pessoa sai da lista. Só aparece quem ainda não tem par.</div>'+
+      '<input class="f" id="clinkBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="Buscar pessoa…" style="margin-bottom:8px">'+
+      '<div id="clinkList">'+clinkRowsHTML()+'</div>');
+    var si=$('#clinkBuscaInput');if(si)si.focus();
   }
 
   /* ---------- Tarefas ---------- */
@@ -792,6 +806,7 @@
     if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
     if(e.target.id==='convBuscaInput'){convBusca=e.target.value;var ecl=document.getElementById('convList');if(ecl)ecl.innerHTML=convListaHTML();return;}
     if(e.target.id==='convFilterSel'){convFilter=e.target.value;var ecf=document.getElementById('convList');if(ecf)ecf.innerHTML=convListaHTML();return;}
+    if(e.target.id==='clinkBuscaInput'){clinkBusca=e.target.value;var eck=document.getElementById('clinkList');if(eck)eck.innerHTML=clinkRowsHTML();return;}
     if(e.target.closest&&e.target.closest('#parcWrap'))gpCalc();
   });
   document.addEventListener('change',function(e){
