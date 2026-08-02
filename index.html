@@ -135,9 +135,10 @@
   .progl{height:3px;border-radius:999px;background:var(--line);overflow:hidden;margin:12px 4px 0}
   .progl > i{display:block;height:100%;background:var(--gold);transition:width .4s}
   .figs{display:flex;margin-top:16px}
-  .fig{flex:1;min-width:0;padding:0 6px;border-left:1px solid var(--line);text-align:center}
+  .fig{flex:1;min-width:0;padding:0 4px;border-left:1px solid var(--line);text-align:center}
   .fig:first-child{border-left:0}
-  .fig .v{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fig .v{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fig .v .c{font-size:.72rem;font-weight:500;color:var(--muted);margin-right:3px}
   .fig .k{font-size:.63rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
   .gsw .tt{font-weight:500;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gsw .tt.done{text-decoration:line-through;opacity:.5}
@@ -658,7 +659,7 @@
     var metaLine=meta>0?(r.projecao<=meta?'sobra '+fmt0(meta-r.projecao):'estoura '+fmt0(r.projecao-meta)):'toque em Meta para definir';
     if(r.economia>0)metaLine+=' · economizou '+fmt0(r.economia);
     var figs=[['Fechado',r.totalFechado],['Pago',r.pago],['A pagar',r.apagar],['Planejado',r.totalPlan]]
-      .map(function(f){return '<div class="fig"><div class="v">'+fmtN(f[1])+'</div><div class="k">'+f[0]+'</div></div>';}).join('');
+      .map(function(f){return '<div class="fig"><div class="v"><span class="c">R$</span>'+fmtN(f[1])+'</div><div class="k">'+f[0]+'</div></div>';}).join('');
     var opt=function(v,l){return '<option value="'+v+'"'+(gasFiltro===v?' selected':'')+'>'+esc(l)+'</option>';};
     var filterSel='<select id="gasFilterSel" class="cfilter" aria-label="Filtrar">'+
       opt('fechado','Fechados')+opt('planejado','Planejando')+opt('todos','Todos os gastos')+'</select>';
