@@ -34,7 +34,8 @@
   .wrap::-webkit-scrollbar{display:none}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
   .card h2{font-size:1rem;font-weight:600;margin-bottom:.3rem}
-  .grp{font-family:'Playfair Display',serif;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:8px;margin:-16px -16px 10px;padding:12px 16px;border-radius:14px 14px 0 0;border-bottom:1px solid var(--line)}
+  .grp{font-family:'Playfair Display',serif;font-weight:600;font-size:1.08rem;display:flex;align-items:center;gap:8px;margin:-16px -16px 0;padding:12px 16px;border-radius:14px 14px 0 0;background:rgba(176,137,82,.18)}
+  .grp + .sw{border-top:0}
   .cbar{display:flex;gap:8px;align-items:stretch;margin-top:14px}
   .cfilter{flex:1;min-width:0;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:12px;padding:0 12px;font-size:.95rem;font-family:inherit;outline:none;-webkit-appearance:none;appearance:none;height:46px}
   .cfilter:focus{border-color:var(--primary2)}
@@ -275,7 +276,7 @@
   function gData(){return CAS.get('data','')||'';}
   function effStatus(c){return c.status||'pendente';}
   function statusColor(st){return st==='confirmado'?'#1f9d63':st==='recusado'?'#d2533f':'#c3b9a8';}
-  function planeSVG(sent){var c=sent?'#1a7a8a':'#b7ac9a';return '<svg viewBox="0 0 24 24" width="20" height="20" fill="'+(sent?c:'none')+'" stroke="'+c+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';}
+  function planeSVG(sent){var c=sent?'#1a7a8a':'#9a8f7f';return '<svg viewBox="0 0 24 24" width="22" height="22" fill="'+(sent?c:'none')+'" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';}
   function _na(s){s=String(s==null?'':s);try{return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){return s;}}
   function _fn(s){return _na(String(s||'').trim().split(/\s+/)[0]||'').toLowerCase();}
   function isRel(s){return /^(namorad[oa]|espos[oa]|marido|mulher|noiv[oa]|companheir[oa]|acompanhante)$/.test(_na(String(s||'').trim()).toLowerCase());}
@@ -451,7 +452,7 @@
             '<button class="sendbtn" data-act="csend" data-id="'+c.id+'" title="'+(c.enviado?'Convite enviado':'Convite não enviado')+'" aria-label="Convite enviado?">'+planeSVG(!!c.enviado)+'</button>'+
           '</div></div>';
       }).join('');
-      body+='<div class="card"><h2 class="grp" style="background:'+n[2]+'26"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
+      body+='<div class="card"><h2 class="grp"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
     });
     if(!body)body='<div class="card"><div class="empty">'+(q?('Ninguém encontrado para “'+esc(convBusca.trim())+'”.'):'Ninguém neste filtro.')+'</div></div>';
     return body;
