@@ -156,6 +156,7 @@
   .gparc .tot{display:flex;justify-content:space-between;gap:10px;margin-top:4px;padding-top:7px;border-top:1px solid var(--line)}
   .gparc .tot .k{color:var(--muted)}
   .gparc .tot .v{font-family:'Playfair Display',serif;font-weight:600}
+  .gparc .tot.solo{margin-top:0;padding-top:0;border-top:0}
   .gparc .warn{margin-top:7px;font-size:.75rem;line-height:1.35;color:#c99a2e}
   .gval{flex:0 0 auto;text-align:right;line-height:1.3}
   .gval .gv{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;white-space:nowrap}
@@ -646,6 +647,11 @@
     var descasa=Math.abs(faltaReal-somaAbertas)>0.01;
     if(!abertas.length&&!descasa)return '<div class="gparc"><div class="pr"><span class="d">Tudo pago.</span></div></div>';
     abertas.sort(function(a,b){return String(a.venc||'9999').localeCompare(String(b.venc||'9999'));});
+    // uma parcela só: listar E totalizar repetiria o mesmo número, o que lê como duas cobranças
+    if(abertas.length===1&&!descasa){
+      var u=abertas[0],quandoU=u.venc?fmtBR(u.venc):'sem data';
+      return '<div class="gparc"><div class="tot solo"><span class="k">Falta 1 parcela · '+esc(quandoU)+'</span><span class="v">'+fmt(faltaReal)+'</span></div></div>';
+    }
     var linhas=abertas.map(function(p){
       var quando=p.venc?fmtBR(p.venc):'sem data';
       var nome=(p.label||'').trim();
