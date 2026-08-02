@@ -277,6 +277,7 @@
   function gData(){return CAS.get('data','')||'';}
   function effStatus(c){return c.status||'pendente';}
   function statusColor(st){return st==='confirmado'?'#1f9d63':st==='recusado'?'#d2533f':'#e0902a';}
+  function dotColor(c){return c.enviado?statusColor(effStatus(c)):'#c3b9a8';}
   function planeSVG(sent){var c=sent?'#1a7a8a':'#9a8f7f';return '<svg viewBox="0 0 24 24" width="22" height="22" fill="'+(sent?c:'none')+'" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';}
   function _na(s){s=String(s==null?'':s);try{return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){return s;}}
   function _fn(s){return _na(String(s||'').trim().split(/\s+/)[0]||'').toLowerCase();}
@@ -448,7 +449,7 @@
           '<div class="sw-act l"><button class="sw-yes" data-act="cst" data-id="'+c.id+'" data-v="confirmado" aria-label="Confirmar">✓</button><button class="sw-mb" data-act="cst" data-id="'+c.id+'" data-v="pendente" aria-label="Pendente">⏳</button><button class="sw-no" data-act="cst" data-id="'+c.id+'" data-v="recusado" aria-label="Recusar">✕</button></div>'+
           '<div class="sw-act r"><button class="sw-del" data-act="cdel" data-id="'+c.id+'" aria-label="Excluir">🗑</button></div>'+
           '<div class="sw-content" data-act="cedit" data-id="'+c.id+'">'+
-            '<span class="dot" style="background:'+statusColor(st)+'"></span>'+
+            '<span class="dot" style="background:'+dotColor(c)+'"></span>'+
             '<div class="grow"><div class="tt" style="white-space:normal">'+nomes+'</div></div>'+
             '<span class="crownslot">'+(c.padrinho?'👑':'')+'</span>'+
             '<button class="sendbtn" data-act="csend" data-id="'+c.id+'" title="'+(c.enviado?'Convite enviado':'Convite não enviado')+'" aria-label="Convite enviado?">'+planeSVG(!!c.enviado)+'</button>'+
