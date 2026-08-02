@@ -107,7 +107,8 @@
   .sw-no{background:var(--erro)}
   .sw-del{background:#4a4038}
   .sw-content{position:relative;z-index:1;background:var(--card);display:flex;align-items:center;gap:11px;padding:12px 0;transition:transform .2s ease;touch-action:pan-y;cursor:pointer}
-  .sendbtn{flex:0 0 auto;border:0;background:transparent;padding:4px 2px 4px 8px;cursor:pointer;display:flex;align-items:center;line-height:1}
+  .sendbtn{flex:0 0 auto;border:0;background:transparent;padding:4px 2px;cursor:pointer;display:flex;align-items:center;line-height:1}
+  .crownslot{flex:0 0 auto;width:22px;text-align:center;font-size:1.05rem;line-height:1}
   .statgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}
   .stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px}
   .stat .n{font-size:1.55rem;font-weight:600;line-height:1.1}
@@ -448,7 +449,8 @@
           '<div class="sw-act r"><button class="sw-del" data-act="cdel" data-id="'+c.id+'" aria-label="Excluir">🗑</button></div>'+
           '<div class="sw-content" data-act="cedit" data-id="'+c.id+'">'+
             '<span class="dot" style="background:'+statusColor(st)+'"></span>'+
-            '<div class="grow"><div class="tt" style="white-space:normal">'+nomes+(c.padrinho?' 👑':'')+'</div></div>'+
+            '<div class="grow"><div class="tt" style="white-space:normal">'+nomes+'</div></div>'+
+            '<span class="crownslot">'+(c.padrinho?'👑':'')+'</span>'+
             '<button class="sendbtn" data-act="csend" data-id="'+c.id+'" title="'+(c.enviado?'Convite enviado':'Convite não enviado')+'" aria-label="Convite enviado?">'+planeSVG(!!c.enviado)+'</button>'+
           '</div></div>';
       }).join('');
