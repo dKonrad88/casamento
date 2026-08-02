@@ -431,13 +431,12 @@
       if(!g.length)return;
       var rows=g.map(function(c){
         var st=effStatus(c),casal=c.conjuge&&c.conjuge.trim();
-        var subL=c.padrinho?'<div class="ms">👑 padrinho</div>':'';
         return '<div class="sw">'+
           '<div class="sw-act l"><button class="sw-yes" data-act="cst" data-id="'+c.id+'" data-v="confirmado" aria-label="Confirmar">✓</button><button class="sw-mb" data-act="cst" data-id="'+c.id+'" data-v="talvez" aria-label="Talvez">?</button><button class="sw-no" data-act="cst" data-id="'+c.id+'" data-v="recusado" aria-label="Recusar">✕</button></div>'+
           '<div class="sw-act r"><button class="sw-del" data-act="cdel" data-id="'+c.id+'" aria-label="Excluir">🗑</button></div>'+
           '<div class="sw-content" data-act="cedit" data-id="'+c.id+'">'+
             '<span class="dot" style="background:'+statusColor(st)+'"></span>'+
-            '<div class="grow"><div class="tt" style="white-space:normal">'+esc(c.nome)+(casal?' <span style="color:#4a90d9">&amp;</span> '+esc(c.conjuge):'')+'</div>'+subL+'</div>'+
+            '<div class="grow"><div class="tt" style="white-space:normal">'+esc(c.nome)+(casal?' <span style="color:#4a90d9">&amp;</span> '+esc(c.conjuge):'')+(c.padrinho?' 👑':'')+'</div></div>'+
           '</div></div>';
       }).join('');
       body+='<div class="card"><h2 class="grp"><span class="dot" style="background:'+n[2]+'"></span>'+n[1]+' <span class="mini" style="font-weight:400">('+g.reduce(function(s,c){return s+qtd(c);},0)+' pessoas)</span></h2>'+rows+'</div>';
