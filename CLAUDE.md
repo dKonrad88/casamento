@@ -53,7 +53,14 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
   - **Swipe (gestos, `sw*` funcs):** arrastar **→ direita** revela 3 botões (✓ confirmar / ⏳ pendente / ✕ recusar); **← esquerda** revela 🗑 excluir. Sem botões fixos. `SW_L=162, SW_R=-54`.
   - **Toolbar compacta:** `<select>` de filtro (Status / Convite enviado-não / Grupo) + 🔍 (abre busca) + ＋ (add). Resumo mostra "X de N convites enviados".
   - Status possíveis: **confirmado / pendente / recusado** (sem "talvez"). Todos os 109 estão `pendente` e `não enviado` agora (início limpo).
-- **Gastos** — paridade total com o HUB: filtro **Fechado × Planejando** (derivado dos 11 `CAS_STATUS`), editor completo (desc/status/empresa/**valorIni orçado × valor final**→economia/obs), **editor de pagamentos/parcelas** (`formPagamento`: add/remover, marcar paga, dividir, gerar entrada+N, datas mês a mês, resumo ao vivo). Dashboard Fechado/Pago/A pagar/Planejado + projeção. Busca + ordem alfabética. "inicial" riscado + "final" na lista; economia só em negociação real. Gasto sem `tipo` conta como **fechado** (regra herdada do HUB).
+- **Gastos** — paridade funcional com o HUB + tratamento editorial (feito depois de Convidados):
+  - **Topo editorial** (sem card): "PROJEÇÃO" em Cormorant maiúsculo espaçado + valor em Playfair, **Meta clicável** à direita (`data-act="gmeta"`, some o botão "Definir meta"), régua fina **dourada** (`.progl`, não o gradiente azul), fio `.rule` e faixa **`.figs`** com 4 números (Fechado/Pago/A pagar/Planejado) em Playfair, **sem cor e sem "R$"** (`fmtN`), separados por filete.
+  - **Toolbar igual à de Convidados:** `<select>` (Fechados/Planejando/Todos) + 🔍 (toggle da busca) + ＋. Sem as pílulas `.seg` e sem o botão full-width.
+  - **Lista:** barra `.grp` marrom com o nome do filtro + contagem. Cada linha é `.sw-content.gsw` — **cor só no dot** de 8px (`casStatusColor`), texto todo em tinta/cinza. Sub em **1 linha** com ellipsis; o **status textual só aparece em Planejando ou se cancelado** (em Fechados o dot já diz). Datas curtas dd/mm/aa (`fmtBRc`).
+  - **Swipe** (sem botões fixos): **→ direita** = 💳 pagamentos (só em fechados), **← esquerda** = 🗑 excluir. Limites por linha via `data-swl`/`data-swr` (Gastos 54/-54, Convidados 162/-54).
+  - **Valores:** em **fechado**, orçado riscado (só se ≠ do final) + final em Playfair + `▼ economia`; em **planejado**, o `valorIni` É o valor exibido com o rótulo "orçado" — nunca risca nem mostra "R$ 0,00".
+  - `gastosResumo().economia` só conta **negociação real** (`vf>0 && vi>vf`) — antes somava o orçado inteiro dos planejados e inflava a economia.
+  - Editor completo (desc/status/empresa/valorIni × valor final/obs) e **editor de pagamentos/parcelas** (`formPagamento`) inalterados. Gasto sem `tipo` conta como **fechado** (regra herdada do HUB).
 - **Tarefas / Checklist:** funcionais (feito/pendente/quem/data; seções colapsáveis com itens). Ainda **não** ganharam o tratamento editorial completo — próximo passo natural.
 
 ## Gotchas
@@ -65,5 +72,7 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
 
 ## Próximos passos (abertos)
 
-- Levar o editorial pras abas **Tarefas** e **Checklist** (e refinar **Gastos** se quiser).
+- Levar o editorial pras abas **Tarefas** e **Checklist** (Convidados e Gastos já foram).
+- Código morto de antes: `gEco()`, `gasPago()`, `gasCat()` não são usados por ninguém.
+- Bug aberto em **Convidados**: o botão que chama `clinkPicker` ("Formar casal") não existe em lugar nenhum — o handler `clinkpick` e o picker estão prontos, mas inalcançáveis. E `persistConvidado` força `qtd = conj?2:1`, então não dá pra registrar família com filhos.
 - Dashboard read-only no HUB (`hubpessoal`) apontando pra `casamento_state` (hoje o HUB lê o `hub_state` antigo e desatualiza).

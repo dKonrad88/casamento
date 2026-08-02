@@ -76,10 +76,6 @@
   select.f{width:100%;border:1.5px solid var(--line);background:var(--card2);color:var(--ink);border-radius:11px;padding:12px 14px;font-size:1rem;font-family:inherit;margin-bottom:10px;outline:none;-webkit-appearance:none;appearance:none}
   select.f:focus{border-color:var(--primary2)}
   label.fl{display:block;font-size:.8rem;color:var(--muted);margin:2px 0 5px}
-  .seg{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;margin:14px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
-  .seg::-webkit-scrollbar{display:none}
-  .seg button{flex:0 0 auto;border:1px solid var(--line);background:var(--card2);color:var(--muted);border-radius:999px;padding:7px 14px;font-size:.82rem;font-family:inherit;cursor:pointer;white-space:nowrap}
-  .seg button.on{background:var(--primary);border-color:var(--primary);color:#fff}
   .row{display:flex;align-items:center;gap:11px;padding:12px 0;border-top:1px solid var(--line)}
   .row:first-child{border-top:0}
   .row .grow,.sw-content .grow{flex:1;min-width:0}
@@ -130,7 +126,26 @@
   .empty{text-align:center;color:var(--muted);font-size:.9rem;padding:26px 10px}
   .totbar{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
   .totbar .v{font-size:1.4rem;font-weight:700}
-  .badge{font-size:.66rem;padding:2px 8px;border-radius:999px;font-weight:600;color:#fff;white-space:nowrap}
+  /* topo editorial (Gastos) */
+  .ed{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:8px 4px 0}
+  .edlbl{font-family:'Cormorant Garamond',serif;font-size:.92rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  .edval{font-family:'Playfair Display',serif;font-size:2rem;font-weight:600;line-height:1.05;color:var(--ink);margin-top:2px}
+  .edmeta{flex:0 0 auto;text-align:right;cursor:pointer}
+  .edmeta .m{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;color:var(--muted);margin-top:2px}
+  .progl{height:3px;border-radius:999px;background:var(--line);overflow:hidden;margin:12px 4px 0}
+  .progl > i{display:block;height:100%;background:var(--gold);transition:width .4s}
+  .figs{display:flex;margin-top:16px}
+  .fig{flex:1;min-width:0;padding:0 6px;border-left:1px solid var(--line);text-align:center}
+  .fig:first-child{border-left:0}
+  .fig .v{font-family:'Playfair Display',serif;font-size:.98rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .fig .k{font-size:.63rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
+  .gsw .tt{font-weight:500;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gsw .tt.done{text-decoration:line-through;opacity:.5}
+  .gsw .ms{font-size:.76rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gval{flex:0 0 auto;text-align:right;line-height:1.3}
+  .gval .gv{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;white-space:nowrap}
+  .gval .old{text-decoration:line-through;opacity:.75}
+  .sw-pay{background:var(--primary2)}
   .parc{border:1px solid var(--line);border-radius:10px;padding:8px;margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--card2)}
   .pf{border:1.5px solid var(--line);background:var(--card);color:var(--ink);border-radius:9px;padding:9px 8px;font-size:.85rem;font-family:inherit;outline:none;min-width:0}
   .pf:focus{border-color:var(--primary2)}
@@ -295,6 +310,8 @@
   var _idc=null;
   function nid(){if(_idc==null){var all=[].concat(gConv(),gTar(),gGas()).map(function(x){return parseInt(x&&x.id)||0;});_idc=Math.max.apply(null,[2000].concat(all));}return ++_idc;}
   function fmt(v){return 'R$ '+(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  function fmt0(v){return 'R$ '+Math.round(Number(v)||0).toLocaleString('pt-BR');}
+  function fmtN(v){return Math.round(Number(v)||0).toLocaleString('pt-BR');}
   function pm(s){s=String(s==null?'':s).trim();if(!s)return 0;s=s.replace(/[^\d.,]/g,'');if(s.indexOf(',')>=0)s=s.replace(/\./g,'').replace(',','.');return parseFloat(s)||0;}
   function save(k,v){CAS.set(k,v);}
   function countdown(){
@@ -578,7 +595,7 @@
   function gPagoAmt(g){var p=gParc(g);if(p.length)return p.filter(function(x){return x.paga;}).reduce(function(s,x){return s+(parseFloat(x.valor)||0);},0);return (g.pago===true||g.status==='pago')?gasVal(g):0;}
   function gStatusOf(g){var p=gParc(g);if(!p.length)return g.status||'apagar';var pago=gPagoAmt(g);if(pago<=0.001)return 'apagar';if(pago>=gasVal(g)-0.001)return 'pago';return 'parcial';}
   function gEco(g){var vi=parseFloat(g.valorIni)||0;return vi>gasVal(g)?vi-gasVal(g):0;}
-  function gProxVenc(g){var ds=gParc(g).filter(function(x){return !x.paga&&x.venc;}).map(function(x){return x.venc;}).sort();if(!ds.length)return g.venc||'';return fmtBR(ds[0])+(ds.length>1?' +'+(ds.length-1):'');}
+  function gProxVenc(g){var ds=gParc(g).filter(function(x){return !x.paga&&x.venc;}).map(function(x){return x.venc;}).sort();if(!ds.length)return g.venc||'';return fmtBRc(ds[0])+(ds.length>1?' +'+(ds.length-1):'');}
   function moneyIn(v){return (Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
   function addMonthsISO(iso,n){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);if(!m)return iso;var t=new Date(+m[1],(+m[2]-1)+n,1);var last=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();var day=Math.min(+m[3],last);return t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(day).padStart(2,'0');}
   function curG(id){return gGas().filter(function(x){return String(x.id)===String(id);})[0];}
@@ -589,10 +606,11 @@
     var totalFechado=fechados.reduce(function(s,g){return s+gasVal(g);},0);
     var totalPlan=plan.reduce(function(s,g){return s+(parseFloat(g.valorIni)||gasVal(g));},0);
     var pago=fechados.reduce(function(s,g){return s+gPagoAmt(g);},0);
-    var economia=ativos.reduce(function(s,g){var vi=parseFloat(g.valorIni)||0;return s+(vi>0?(vi-gasVal(g)):0);},0);
+    // economia só conta negociação real: precisa ter valor final fechado e menor que o orçado
+    var economia=ativos.reduce(function(s,g){var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);return s+((vf>0&&vi>vf)?(vi-vf):0);},0);
     return {totalFechado:totalFechado,totalPlan:totalPlan,pago:pago,apagar:totalFechado-pago,projecao:totalFechado+totalPlan,economia:economia,meta:gMeta()};
   }
-  var gasFiltro='fechado', gasBusca='';
+  var gasFiltro='fechado', gasBusca='', gasSearchOpen=false;
   function gastosListaHTML(){
     var q=(gasBusca||'').trim().toLowerCase();
     var lista=gGas().filter(function(g){
@@ -606,42 +624,55 @@
       return '<div class="card"><div class="empty">'+emptyTxt+'</div></div>';
     }
     var rows=lista.map(function(g){
-      var canc=gasCancel(g),st=casStatusOf(g),cor=casStatusColor(st),tipo=gTipoOf(g);
+      var canc=gasCancel(g),st=casStatusOf(g),tipo=gTipoOf(g);
       var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);
       var realEco=(vf>0&&vi>vf)?(vi-vf):0;
-      var right=(vi>0?'<div class="ms" style="color:#4a90d9;font-weight:500">inicial '+fmt(vi)+'</div>':'')+
-        '<div style="font-weight:600">'+(vi>0?'<span class="ms" style="font-weight:400;opacity:.8">final </span>':'')+fmt(vf)+'</div>'+
-        (realEco>0?'<div class="ms" style="color:#34d399">▼ economia '+fmt(realEco)+'</div>':'');
-      var sub=['<span class="badge" style="background:'+cor+'">'+esc(st)+'</span>'];
-      if(g.empresa||g.categoria)sub.push('<span>'+esc(g.empresa||g.categoria)+'</span>');
-      if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push('<span>'+p.filter(function(x){return x.paga;}).length+'/'+p.length+' pago</span>');var pv=gProxVenc(g);if(pv&&!canc)sub.push('<span>venc '+esc(pv)+'</span>');}
-      return '<div class="row"><div class="grow" data-act="gedit" data-id="'+g.id+'"><div class="tt'+(canc?' done':'')+'" style="white-space:normal;line-height:1.3">'+esc(g.desc||'(sem descrição)')+'</div>'+
-        '<div class="ms" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;white-space:normal">'+sub.join('<span style="opacity:.35">·</span>')+'</div></div>'+
-        '<div style="text-align:right;flex:0 0 auto">'+right+'</div>'+
-        (tipo==='fechado'?'<button class="ib" data-act="gpag" data-id="'+g.id+'" title="Pagamentos">💳</button>':'')+
-        '<button class="ib" data-act="gdel" data-id="'+g.id+'">🗑</button></div>';
+      // planejado: o orçado É o valor (estimativa) — não risca nem mostra "R$ 0,00"
+      var right=(tipo==='planejado')
+        ? '<div class="gv">'+fmt(vf>0?vf:vi)+'</div>'+(vf>0?'':'<div class="ms">orçado</div>')
+        : ((vi>0&&Math.abs(vi-vf)>0.01)?'<div class="ms old">'+fmt(vi)+'</div>':'')+
+          '<div class="gv">'+fmt(vf)+'</div>'+
+          (realEco>0?'<div class="ms">▼ '+fmt0(realEco)+'</div>':'');
+      // em Fechados o status textual é redundante (o dot já diz) — só aparece em Planejando ou se cancelado
+      var sub=[];
+      if(tipo!=='fechado'||canc)sub.push(esc(st));
+      if(g.empresa||g.categoria)sub.push(esc(g.empresa||g.categoria));
+      if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push(p.filter(function(x){return x.paga;}).length+'/'+p.length);var pv=gProxVenc(g);if(pv&&!canc)sub.push('venc '+esc(pv));}
+      var pay=(tipo==='fechado');
+      return '<div class="sw">'+
+        (pay?'<div class="sw-act l"><button class="sw-pay" data-act="gpag" data-id="'+g.id+'" aria-label="Pagamentos">💳</button></div>':'')+
+        '<div class="sw-act r"><button class="sw-del" data-act="gdel" data-id="'+g.id+'" aria-label="Excluir">🗑</button></div>'+
+        '<div class="sw-content gsw" data-act="gedit" data-id="'+g.id+'" data-swl="'+(pay?54:0)+'" data-swr="-54">'+
+          '<span class="dot" style="background:'+casStatusColor(st)+'"></span>'+
+          '<div class="grow"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div>'+
+            '<div class="ms">'+sub.join(' · ')+'</div></div>'+
+          '<div class="gval">'+right+'</div>'+
+        '</div></div>';
     }).join('');
-    return '<div class="card">'+rows+'</div>';
+    var titulo=gasFiltro==='fechado'?'Fechados':gasFiltro==='planejado'?'Planejando':'Todos os gastos';
+    return '<div class="card"><h2 class="grp">'+titulo+' <span class="mini" style="font-weight:400">('+lista.length+')</span></h2>'+rows+'</div>';
   }
   function renderGastos(app){
     var r=gastosResumo(),meta=r.meta;
     var pct=meta>0?Math.min(r.projecao/meta,1)*100:0;
-    var metaLine=meta>0?(r.projecao<=meta?'<span style="color:var(--ok)">sobra '+fmt(meta-r.projecao)+'</span>':'<span style="color:var(--erro)">estoura '+fmt(r.projecao-meta)+'</span>'):'toque em "Definir meta"';
-    var seg='<div class="seg">'+[['fechado','Fechados'],['planejado','Planejando'],['todos','Todos']].map(function(s){return '<button data-act="gfil" data-v="'+s[0]+'"'+(gasFiltro===s[0]?' class="on"':'')+'>'+s[1]+'</button>';}).join('')+'</div>';
+    var metaLine=meta>0?(r.projecao<=meta?'sobra '+fmt0(meta-r.projecao):'estoura '+fmt0(r.projecao-meta)):'toque em Meta para definir';
+    if(r.economia>0)metaLine+=' · economizou '+fmt0(r.economia);
+    var figs=[['Fechado',r.totalFechado],['Pago',r.pago],['A pagar',r.apagar],['Planejado',r.totalPlan]]
+      .map(function(f){return '<div class="fig"><div class="v">'+fmtN(f[1])+'</div><div class="k">'+f[0]+'</div></div>';}).join('');
+    var opt=function(v,l){return '<option value="'+v+'"'+(gasFiltro===v?' selected':'')+'>'+esc(l)+'</option>';};
+    var filterSel='<select id="gasFilterSel" class="cfilter" aria-label="Filtrar">'+
+      opt('fechado','Fechados')+opt('planejado','Planejando')+opt('todos','Todos os gastos')+'</select>';
     app.innerHTML=
-      '<div class="card"><div class="totbar"><div><div class="mini">Projeção</div><div class="v">'+fmt(r.projecao)+'</div></div><div style="text-align:right"><div class="mini">Meta</div><div style="font-weight:600">'+(meta>0?fmt(meta):'—')+'</div></div></div>'+
-        '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
-        '<div class="mini" style="margin-top:8px">'+metaLine+(r.economia>0?' · <span style="color:#34d399">economizou '+fmt(r.economia)+'</span>':'')+'</div>'+
-        '<button class="btn soft" data-act="gmeta" style="margin-top:12px">Definir meta</button></div>'+
-      '<div class="statgrid">'+
-        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#4a90d9">'+fmt(r.totalFechado)+'</div><div class="l">Fechado</div></div>'+
-        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#34d399">'+fmt(r.pago)+'</div><div class="l">Pago</div></div>'+
-        '<div class="stat"><div class="n" style="font-size:1.1rem;color:'+(r.apagar>0.01?'#d2533f':'#34d399')+'">'+fmt(r.apagar)+'</div><div class="l">A pagar</div></div>'+
-        '<div class="stat"><div class="n" style="font-size:1.1rem;color:#a78bfa">'+fmt(r.totalPlan)+'</div><div class="l">Planejado</div></div>'+
-      '</div>'+
-      '<button class="btn" data-act="gadd" style="margin-top:14px">＋ Novo gasto</button>'+
-      seg+
-      '<input class="f" id="gasBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="🔍 Buscar por nome ou fornecedor…" value="'+esc(gasBusca)+'" style="margin-bottom:0">'+
+      '<div class="ed"><div><div class="edlbl">Projeção</div><div class="edval">'+fmt0(r.projecao)+'</div></div>'+
+        '<div class="edmeta" data-act="gmeta"><div class="mini">Meta</div><div class="m">'+(meta>0?fmt0(meta):'definir')+'</div></div></div>'+
+      '<div class="progl"><i style="width:'+pct+'%"></i></div>'+
+      '<div class="mini" style="margin:8px 4px 0">'+metaLine+'</div>'+
+      '<div class="rule"></div>'+
+      '<div class="figs">'+figs+'</div>'+
+      '<div class="cbar">'+filterSel+
+        '<button class="ib2'+(gasSearchOpen?' on':'')+'" data-act="gsearch" aria-label="Buscar">🔍</button>'+
+        '<button class="ib2 add" data-act="gadd" aria-label="Novo gasto">＋</button></div>'+
+      (gasSearchOpen?'<input class="f" id="gasBuscaInput" type="search" autocapitalize="off" autocorrect="off" placeholder="Buscar por nome ou fornecedor…" value="'+esc(gasBusca)+'" style="margin:10px 0 0">':'')+
       '<div id="gasList">'+gastosListaHTML()+'</div>';
   }
   function formGasto(g){
@@ -744,16 +775,19 @@
   }
 
   function fmtBR(d){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?m[3]+'/'+m[2]+'/'+m[1]:(d||'');}
+  function fmtBRc(d){var m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(d||'');return m?m[3]+'/'+m[2]+'/'+m[1].slice(2):(d||'');}
 
-  /* ---------- swipe (linhas de Convidados) ---------- */
+  /* ---------- swipe (linhas de Convidados e Gastos; limites por linha via data-swl/data-swr) ---------- */
   var SW_L=162, SW_R=-54;
-  var swEl=null,swX0=0,swY0=0,swBase=0,swDrag=false,swOpen=null,swSuppress=false;
+  var swEl=null,swX0=0,swY0=0,swBase=0,swDrag=false,swOpen=null,swSuppress=false,swLcur=SW_L,swRcur=SW_R;
+  function swLim(el,attr,def){var n=parseInt(el.getAttribute(attr));return isNaN(n)?def:n;}
   function swClose(el){if(el&&el.style){el.style.transition='';el.style.transform='';el._sw=0;}}
   function swDown(e){
     if(e.target.closest&&e.target.closest('.sw-act'))return;
     var c=e.target.closest&&e.target.closest('.sw-content');if(!c)return;
     if(swOpen&&swOpen!==c)swClose(swOpen);
     swEl=c;swX0=e.clientX;swY0=e.clientY;swBase=c._sw||0;swDrag=false;
+    swLcur=swLim(c,'data-swl',SW_L);swRcur=swLim(c,'data-swr',SW_R);
   }
   function swMove(e){
     if(!swEl)return;
@@ -763,7 +797,7 @@
       if(Math.abs(dx)>10)swDrag=true;else return;
     }
     if(e.cancelable)e.preventDefault();
-    var v=Math.max(SW_R-8,Math.min(SW_L+8,swBase+dx));
+    var v=Math.max(swRcur-8,Math.min(swLcur+8,swBase+dx));
     swEl.style.transition='none';swEl.style.transform='translateX('+v+'px)';
   }
   function swUp(e){
@@ -773,8 +807,8 @@
       return;
     }
     var v=swBase+(e.clientX-swX0);
-    if(v>84){el.style.transform='translateX('+SW_L+'px)';el._sw=SW_L;swOpen=el;}
-    else if(v<-30){el.style.transform='translateX('+SW_R+'px)';el._sw=SW_R;swOpen=el;}
+    if(swLcur>0&&v>swLcur*0.52){el.style.transform='translateX('+swLcur+'px)';el._sw=swLcur;swOpen=el;}
+    else if(swRcur<0&&v<swRcur*0.55){el.style.transform='translateX('+swRcur+'px)';el._sw=swRcur;swOpen=el;}
     else{el.style.transform='';el._sw=0;if(swOpen===el)swOpen=null;}
     swSuppress=true;setTimeout(function(){swSuppress=false;},400);
   }
@@ -807,7 +841,7 @@
     // gastos
     if(act==='gadd'){formGasto(null);return;}
     if(act==='gedit'){var g=curG(id);if(g)formGasto(g);return;}
-    if(act==='gfil'){gasFiltro=v;render();return;}
+    if(act==='gsearch'){gasSearchOpen=!gasSearchOpen;if(!gasSearchOpen)gasBusca='';render();if(gasSearchOpen){var gsi=$('#gasBuscaInput');if(gsi)gsi.focus();}return;}
     if(act==='gdel'){if(confirm('Excluir gasto?')){save('gastos',gGas().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
     if(act==='gsave'){saveGasto(id);return;}
     if(act==='gmeta'){var m=prompt('Meta de gastos (R$):',gMeta()||'');if(m===null)return;save('meta',pm(m));render();return;}
@@ -873,6 +907,7 @@
   document.addEventListener('input',function(e){
     if(!e.target)return;
     if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
+    if(e.target.id==='gasFilterSel'){gasFiltro=e.target.value;var egf=document.getElementById('gasList');if(egf)egf.innerHTML=gastosListaHTML();return;}
     if(e.target.id==='convBuscaInput'){convBusca=e.target.value;var ecl=document.getElementById('convList');if(ecl)ecl.innerHTML=convListaHTML();return;}
     if(e.target.id==='convFilterSel'){convFilter=e.target.value;var ecf=document.getElementById('convList');if(ecf)ecf.innerHTML=convListaHTML();return;}
     if(e.target.id==='clinkBuscaInput'){clinkBusca=e.target.value;var eck=document.getElementById('clinkList');if(eck)eck.innerHTML=clinkRowsHTML();return;}
@@ -880,6 +915,7 @@
   });
   document.addEventListener('change',function(e){
     if(e.target&&e.target.id==='convFilterSel'){convFilter=e.target.value;var el=document.getElementById('convList');if(el)el.innerHTML=convListaHTML();}
+    if(e.target&&e.target.id==='gasFilterSel'){gasFiltro=e.target.value;var elg=document.getElementById('gasList');if(elg)elg.innerHTML=gastosListaHTML();}
   });
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
