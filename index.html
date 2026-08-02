@@ -142,6 +142,7 @@
     <div class="htxt"><h1 id="htitle">Casamento</h1><p id="hsub"></p></div>
     <div class="hacts">
       <button class="hbtn" id="themeBtn" aria-label="Alternar tema">🌙</button>
+      <button class="hbtn" id="updBtn" aria-label="Atualizar o app">🔄</button>
       <button class="hbtn" id="cfgBtn" aria-label="Configurações">⚙️</button>
     </div>
   </div>
@@ -420,7 +421,7 @@
         var st=effStatus(c),casal=c.conjuge&&c.conjuge.trim();
         return '<div class="row">'+
           '<span class="dot" style="background:'+n[2]+'"></span>'+
-          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt" style="white-space:normal">'+esc(c.nome)+(casal?' &amp; '+esc(c.conjuge):'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑':'')+'</div></div>'+
+          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt" style="white-space:normal">'+esc(c.nome)+(casal?' <span style="color:#4a90d9">&amp;</span> '+esc(c.conjuge):'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑':'')+'</div></div>'+
           '<div class="rsvp"><button class="yes'+(st==='confirmado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="confirmado" title="Confirmou">✓</button>'+
           '<button class="no'+(st==='recusado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="recusado" title="Recusou">✕</button></div>'+
           '<button class="ib" data-act="cdel" data-id="'+c.id+'">🗑</button></div>';
@@ -782,14 +783,10 @@
       ? '<button class="mitem" id="cfgData"><span class="mic">📅</span> Data do casamento'+(gData()?' — '+esc(fmtBR(gData())):'')+'</button>'
       : '';
     body.innerHTML='<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:6px">⚙️ Configurações</h2>'+
-      conta+compart+dataItem+
-      '<button class="mitem" id="cfgUpd"><span class="mic">🔄</span> Atualizar o app</button>'+
-      '<button class="mitem" id="cfgTheme"><span class="mic">'+(theme==='dark'?'☀️':'🌙')+'</span> Tema '+(theme==='dark'?'claro':'escuro')+'</button>';
+      conta+compart+dataItem;
     var o=$('#cfgOut');if(o)o.addEventListener('click',sbLogout);
     var sh=$('#cfgShare');if(sh)sh.addEventListener('click',gerarConvite);
     var dt=$('#cfgData');if(dt)dt.addEventListener('click',function(){closeCfg();pedirData();});
-    $('#cfgUpd').addEventListener('click',updateApp);
-    $('#cfgTheme').addEventListener('click',function(){setTheme(theme==='dark'?'light':'dark');});
   }
 
   /* ---------- init ---------- */
@@ -798,6 +795,7 @@
   $('#cfgBtn').addEventListener('click',openCfg);
   $('#cfgBg').addEventListener('click',closeCfg);
   $('#themeBtn').addEventListener('click',function(){var t=document.documentElement.getAttribute('data-theme');setTheme(t==='dark'?'light':'dark');});
+  $('#updBtn').addEventListener('click',updateApp);
   $('#backBtn').addEventListener('click',function(){go('home');});
   $('#fBg').addEventListener('click',closeForm);
   document.addEventListener('click',onAppClick);
