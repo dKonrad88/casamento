@@ -30,6 +30,7 @@
   .hbtn.back{font-size:1.7rem;padding-bottom:3px}
   .header.home{background:transparent;border-bottom:0;padding-bottom:2px}
   .header.home .htxt{display:none}
+  .offbar{flex-shrink:0;background:#c99a2e;color:#221a08;font-size:.78rem;font-weight:500;padding:8px 14px;text-align:center;line-height:1.3}
   .wrap{flex:1;overflow-y:auto;min-height:0;width:100%;max-width:560px;margin:0 auto;padding:16px 16px 40px;scrollbar-width:none}
   .wrap::-webkit-scrollbar{display:none}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
@@ -193,6 +194,7 @@
       <button class="hbtn" id="cfgBtn" aria-label="Configurações">⚙️</button>
     </div>
   </div>
+  <div class="offbar" id="filaBar" style="display:none"></div>
   <div class="wrap"><div id="app"></div></div>
 
   <div class="modal-bg" id="cfgBg"></div>
@@ -282,11 +284,63 @@
     if(!espacoId)return;
     var r=await sb.from('casamento_state').select('key,value').eq('lista_id',espacoId);
     if(!r.error){(r.data||[]).forEach(function(x){dados[x.key]=x.value;});}
+    // o que ainda não subiu vale mais que o servidor — senão a edição some da tela
+    var f=filaLer();
+    Object.keys(f).forEach(function(k){if(f[k].lista_id===espacoId)dados[f[k].key]=f[k].value;});
+  }
+
+  /* ---------- fila de gravação ----------
+     O upsert pode falhar (rede do celular) e antes disso o erro era engolido:
+     a tela mostrava o dado novo e o banco não recebia nada. Agora toda alteração
+     é gravada no localStorage ANTES de tentar subir, e só sai da fila quando o
+     servidor confirma — sobrevive a fechar o app. */
+  var FILA_KEY='cas_fila_v1', filaTimer=null, filaAtiva=false, filaEspera=3000, filaAvisou=false;
+  function filaLer(){try{return JSON.parse(localStorage.getItem(FILA_KEY)||'{}')||{};}catch(e){return {};}}
+  function filaGravar(o){try{localStorage.setItem(FILA_KEY,JSON.stringify(o));}catch(e){}}
+  function filaPend(){return Object.keys(filaLer()).length;}
+  function filaAviso(){
+    var n=filaPend(),el=document.getElementById('filaBar');if(!el)return;
+    if(!n){el.style.display='none';filaAvisou=false;return;}
+    el.style.display='block';
+    el.textContent='⚠ '+n+(n>1?' alterações não salvas':' alteração não salva')+' — tentando enviar…';
+  }
+  async function filaEnviar(it){
+    var r=await sb.from('casamento_state').upsert({lista_id:it.lista_id,key:it.key,value:it.value,updated_at:new Date().toISOString()});
+    if(r&&r.error)throw new Error(r.error.message||'falha ao salvar');
+  }
+  async function escoarFila(){
+    if(filaAtiva||!sb)return;
+    var f=filaLer(),ks=Object.keys(f);
+    if(!ks.length){filaAviso();return;}
+    filaAtiva=true;
+    var falhou=false;
+    for(var i=0;i<ks.length;i++){
+      var it=f[ks[i]];
+      try{
+        await filaEnviar(it);
+        var atual=filaLer();
+        // só tira da fila se ninguém sobrescreveu enquanto subia
+        if(atual[ks[i]]&&JSON.stringify(atual[ks[i]].value)===JSON.stringify(it.value)){delete atual[ks[i]];filaGravar(atual);}
+      }catch(e){falhou=true;break;}
+    }
+    filaAtiva=false;filaAviso();
+    if(falhou){
+      if(!filaAvisou){filaAvisou=true;try{toast('Não salvou — sem conexão. Tentando de novo…');}catch(e){}}
+      clearTimeout(filaTimer);
+      filaTimer=setTimeout(function(){filaEspera=Math.min(filaEspera*2,60000);escoarFila();},filaEspera);
+    }else{
+      filaEspera=3000;
+      if(filaPend())escoarFila();
+    }
   }
   async function salvar(key,value){
     if(!espacoId)return;
     dados[key]=value;
-    await sb.from('casamento_state').upsert({lista_id:espacoId,key:key,value:value,updated_at:new Date().toISOString()});
+    var f=filaLer();
+    f[espacoId+'|'+key]={lista_id:espacoId,key:key,value:value};
+    filaGravar(f);           // persistido localmente ANTES de qualquer await
+    filaAviso();
+    await escoarFila();
   }
   window.CAS={get:function(k,def){return (k in dados)?dados[k]:def;},set:salvar,espaco:function(){return espacoId;},reload:async function(){await carregarDados();render();}};
 
@@ -294,7 +348,7 @@
   async function boot(){
     if(!user){render();return;}
     var esps=await carregarEspacos();
-    if(esps.length){espacoId=esps[0].id;espacoNome=esps[0].nome||'Casamento';await carregarDados();}
+    if(esps.length){espacoId=esps[0].id;espacoNome=esps[0].nome||'Casamento';await escoarFila();await carregarDados();}
     else{espacoId=null;}
     render();
   }
@@ -987,6 +1041,10 @@
     if(e.target&&e.target.id==='convFilterSel'){convFilter=e.target.value;var el=document.getElementById('convList');if(el)el.innerHTML=convListaHTML();}
     if(e.target&&e.target.id==='gasFilterSel'){gasFiltro=e.target.value;var elg=document.getElementById('gasList');if(elg)elg.innerHTML=gastosListaHTML();}
   });
+  // reenvia o que ficou pendente assim que a conexão volta ou o app é reaberto
+  window.addEventListener('online',function(){filaEspera=3000;escoarFila();});
+  document.addEventListener('visibilitychange',function(){if(!document.hidden&&filaPend()){filaEspera=3000;escoarFila();}});
+  filaAviso();
   sbInit();
   if(sb){sb.auth.getSession().then(function(s){user=(s&&s.data&&s.data.session)?s.data.session.user:null;boot();});}else{render();}
 
