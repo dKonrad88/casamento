@@ -733,7 +733,7 @@
   function parcRow(p,i){
     return '<div class="parc">'+
       '<input class="pf pl" placeholder="Parcela '+(i+1)+'" value="'+esc(p.label||'')+'">'+
-      '<input class="pf pv" inputmode="decimal" value="'+moneyIn(p.valor||0)+'">'+
+      '<input class="pf pv money" inputmode="numeric" value="'+moneyIn(p.valor||0)+'">'+
       '<input class="pf pd" type="date" value="'+esc(p.venc||'')+'">'+
       '<span class="chk pk'+(p.paga?' on':'')+'" data-act="gptog" title="Paga?">'+(p.paga?'✓':'')+'</span>'+
       '<button class="ib" data-act="gprem" title="Remover">✕</button></div>';
@@ -747,7 +747,7 @@
       '<div class="addbar" style="margin-top:8px"><button class="btn soft" data-act="gpadd" style="flex:1">＋ parcela</button><button class="btn soft" data-act="gpdiv" style="flex:1">÷ dividir igual</button></div>'+
       '<div class="card" style="margin-top:10px;padding:12px">'+
         '<div class="fl" style="margin-top:0">Gerar automático</div>'+
-        '<div class="addbar"><input class="f" id="gpEnt" inputmode="decimal" placeholder="entrada R$" style="flex:1"><input class="f" id="gpN" inputmode="numeric" placeholder="nº parcelas" style="flex:0 0 108px"></div>'+
+        '<div class="addbar"><input class="f money" id="gpEnt" inputmode="numeric" placeholder="entrada R$" style="flex:1"><input class="f" id="gpN" inputmode="numeric" placeholder="nº parcelas" style="flex:0 0 108px"></div>'+
         '<button class="btn soft" data-act="gpgen">Gerar entrada + parcelas</button>'+
         '<button class="btn soft" data-act="gpdatas" style="margin-top:6px">📅 Datas mês a mês (a partir da 1ª)</button>'+
       '</div>'+
@@ -922,7 +922,11 @@
   document.addEventListener('click',function(e){if(swSuppress){if(e.target.closest&&e.target.closest('.sw-content')){e.stopPropagation();e.preventDefault();}swSuppress=false;}},true);
   document.addEventListener('input',function(e){
     if(!e.target)return;
-    if(e.target.classList&&e.target.classList.contains('money')){maskMoney(e.target);return;}
+    if(e.target.classList&&e.target.classList.contains('money')){
+      maskMoney(e.target);
+      if(e.target.closest&&e.target.closest('#parcWrap'))gpCalc(); // parcelas recalculam a soma ao vivo
+      return;
+    }
     if(e.target.id==='gasBuscaInput'){gasBusca=e.target.value;var el=document.getElementById('gasList');if(el)el.innerHTML=gastosListaHTML();return;}
     if(e.target.id==='gasFilterSel'){gasFiltro=e.target.value;var egf=document.getElementById('gasList');if(egf)egf.innerHTML=gastosListaHTML();return;}
     if(e.target.id==='convBuscaInput'){convBusca=e.target.value;var ecl=document.getElementById('convList');if(ecl)ecl.innerHTML=convListaHTML();return;}
