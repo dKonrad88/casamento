@@ -70,7 +70,7 @@
   .hero .amp{font-family:'Cormorant Garamond',serif;font-size:.98rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
   .hero h1{font-family:'Playfair Display',serif;font-weight:600;font-size:2.05rem;line-height:1.04;color:var(--ink)}
   .hero .date{font-family:'Cormorant Garamond',serif;font-size:1.06rem;color:var(--muted);margin-top:8px;line-height:1.35}
-  .cdcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;margin-top:14px;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+  .cdcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;margin-top:14px}
   .cdcard .cdnum{font-family:'Playfair Display',serif;font-size:2rem;color:var(--primary2);line-height:1}
   .cdcard .cdlbl{font-size:.78rem;color:var(--muted);margin-top:3px}
   .rule{height:1px;background:linear-gradient(90deg,var(--gold),transparent);margin:17px 3px 2px;opacity:.7}
@@ -144,7 +144,11 @@
   .fig:first-child{border-left:0}
   .fig .v{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .fig .v .c{font-size:.72rem;font-weight:500;color:var(--muted);margin-right:3px}
-  .fig .k{font-size:.63rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.07em}
+  .figs.duo{margin-top:14px}
+  .figs.duo .v{font-size:1.2rem}
+  .figs.duo .v .c{font-size:.8rem}
+  .figs.duo .k{font-size:.62rem;letter-spacing:.06em}
+  .fig .k{font-size:.58rem;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gsw .tt{font-weight:500;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gsw .tt.done{text-decoration:line-through;opacity:.5}
   .gsw .ms{font-size:.76rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -416,10 +420,10 @@
       var alvo=new Date(d+'T00:00:00');
       dateLine=cap1(alvo.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}))+' · '+alvo.toLocaleDateString('pt-BR',{weekday:'long'});
       dateAttr='';
-      var heart='<svg viewBox="0 0 24 24" width="30" height="30" fill="#8fb3d6" aria-hidden="true" style="flex:0 0 auto;overflow:visible"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
+      // card da contagem: só informação — sem clique e sem o coração
       if(cd){
-        if(cd.dias>0)cdCard='<div class="cdcard" data-act="go" data-v="inicio"><div><div class="cdnum">'+cd.dias+'</div><div class="cdlbl">dias para o grande dia</div></div>'+heart+'</div>';
-        else cdCard='<div class="cdcard" data-act="go" data-v="inicio"><div class="cdnum" style="font-size:1.5rem">'+(cd.dias===0?'É hoje 💍':'Já casaram 🎉')+'</div>'+heart+'</div>';
+        if(cd.dias>0)cdCard='<div class="cdcard"><div class="cdnum">'+cd.dias+'</div><div class="cdlbl">dias para o grande dia</div></div>';
+        else cdCard='<div class="cdcard"><div class="cdnum" style="font-size:1.5rem">'+(cd.dias===0?'É hoje 💍':'Já casaram 🎉')+'</div></div>';
       }
     }else{dateLine='toque para definir a data';dateAttr='data-act="setdata" style="cursor:pointer"';}
     function svg(p){return '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
@@ -432,12 +436,19 @@
     var tiles=[
       [IC.users,'Convidados',conf+' confirmado'+(conf===1?'':'s'),'convidados'],
       [IC.task,'Tarefas',pend+' pendente'+(pend===1?'':'s'),'tarefas'],
-      [IC.wallet,'Gastos',fmtMil(rg.projecao)+(rg.meta>0?' / '+Math.round(rg.meta/1000)+' mil':''),'gastos'],
+      [IC.wallet,'Gastos',fmtMil(rg.apagar)+' a pagar','gastos'],   // projeção/meta já aparecem acima
       [IC.check,'Checklist',pctCl+'% concluído','checklist']
     ].map(function(s){return '<div class="tile" data-act="go" data-v="'+s[3]+'"><div class="ic">'+s[0]+'</div><div class="t">'+esc(s[1])+'</div><div class="s">'+esc(s[2])+'</div></div>';}).join('');
+    // projeção × meta no mesmo formato sóbrio da tela de Gastos
+    var dinheiro=(rg.projecao>0||rg.meta>0)
+      ? '<div class="figs duo">'+
+          '<div class="fig"><div class="v"><span class="c">R$</span>'+fmtN(rg.projecao)+'</div><div class="k">Projeção</div></div>'+
+          '<div class="fig"><div class="v">'+(rg.meta>0?'<span class="c">R$</span>'+fmtN(rg.meta):'—')+'</div><div class="k">Meta</div></div>'+
+        '</div>'
+      : '';
     return '<div class="hero"><div class="amp">Diego &amp; Débora</div><h1>Nosso casamento</h1>'+
       '<div class="date" '+dateAttr+'>'+esc(dateLine)+'</div></div>'+
-      '<div class="rule"></div>'+cdCard+'<div class="grid">'+tiles+'</div>';
+      '<div class="rule"></div>'+cdCard+dinheiro+'<div class="grid">'+tiles+'</div>';
   }
   function render(){
     var app=$('#app'),bb=$('#backBtn'),hd=document.querySelector('.header');
@@ -773,7 +784,8 @@
     var pct=meta>0?Math.min(r.projecao/meta,1)*100:0;
     var metaLine=meta>0?(r.projecao<=meta?'sobra '+fmt0(meta-r.projecao):'estoura '+fmt0(r.projecao-meta)):'toque em Meta para definir';
     if(r.economia>0)metaLine+=' · economizou '+fmt0(r.economia);
-    var figs=[['Fechado',r.totalFechado],['Pago',r.pago],['A pagar',r.apagar],['Planejado',r.totalPlan]]
+    // "A contratar" e não "Planejado": deixa claro que é a fatia que falta fechar, não um total à parte
+    var figs=[['Fechado',r.totalFechado],['Pago',r.pago],['A pagar',r.apagar],['A contratar',r.totalPlan]]
       .map(function(f){return '<div class="fig"><div class="v"><span class="c">R$</span>'+fmtN(f[1])+'</div><div class="k">'+f[0]+'</div></div>';}).join('');
     var opt=function(v,l){return '<option value="'+v+'"'+(gasFiltro===v?' selected':'')+'>'+esc(l)+'</option>';};
     var filterSel='<select id="gasFilterSel" class="cfilter" aria-label="Filtrar">'+

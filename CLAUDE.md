@@ -44,7 +44,7 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
 
 ## Telas
 
-- **Home (`homeHTML`):** hero "Diego & Débora / Nosso casamento / data", **card de contagem** ("N dias para o grande dia" + coração azul-claro), fio dourado, 4 tiles (Convidados/Tarefas/Gastos/Checklist com stat ao vivo). Tocar na data/contagem abre `inicio` (resumo completo).
+- **Home (`homeHTML`):** hero "Diego & Débora / Nosso casamento / data", fio dourado, **card de contagem** ("N dias para o grande dia") — só informação, **não é clicável e não tem mais o coração** —, faixa **`.figs.duo`** com Projeção × Meta (mesmo formato sóbrio da tela de Gastos; Meta vira "—" se não definida) e 4 tiles. O tile de Gastos mostra "R$ X a pagar" (projeção/meta já aparecem na faixa acima). A tela `inicio` continua existindo, mas **nada na home linka pra ela** — só a data quando não está definida (`setdata`).
 - **Início (`renderInicio`):** resumo (contagem, confirmados, gasto vs meta via `gastosResumo()`, tarefas pendentes).
 - **Convidados (`convListaHTML`/`renderConvidados`)** — a tela mais trabalhada:
   - Agrupado por nível (`NIVEIS`: Com certeza/Queremos/Pensar muito/Se couber). **Título do grupo** numa barra com fundo **marrom único** (`rgba(176,137,82,.18)`), **sem** bolinha.
