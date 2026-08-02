@@ -70,7 +70,7 @@
   .hero .amp{font-family:'Cormorant Garamond',serif;font-size:.98rem;letter-spacing:.24em;text-transform:uppercase;color:var(--gold);margin-bottom:3px}
   .hero h1{font-family:'Playfair Display',serif;font-weight:600;font-size:2.05rem;line-height:1.04;color:var(--ink)}
   .hero .date{font-family:'Cormorant Garamond',serif;font-size:1.06rem;color:var(--muted);margin-top:8px;line-height:1.35}
-  .cdcard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:15px 18px;margin:14px auto 0;width:fit-content;max-width:100%;display:flex;align-items:center;gap:20px}
+  .cdcard{padding:8px 0 0;margin:10px auto 0;width:fit-content;max-width:100%;display:flex;align-items:center;gap:20px}
   .cdcard .cdtxt{text-align:center}
   .cdcard .cdnum{font-family:'Playfair Display',serif;font-size:2rem;color:var(--primary2);line-height:1}
   .cdcard .cdlbl{font-size:.78rem;color:var(--muted);margin-top:3px}
@@ -424,8 +424,9 @@
       var heart='<svg viewBox="0 0 24 24" width="30" height="30" fill="#8fb3d6" aria-hidden="true" style="flex:0 0 auto;overflow:visible"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>';
       // card da contagem: só informação (não é clicável), mas mantém o coração
       if(cd){
-        if(cd.dias>0)cdCard='<div class="cdcard"><div class="cdtxt"><div class="cdnum">'+cd.dias+'</div><div class="cdlbl">dias para o grande dia</div></div>'+heart+'</div>';
-        else cdCard='<div class="cdcard"><div class="cdnum" style="font-size:1.5rem">'+(cd.dias===0?'É hoje 💍':'Já casaram 🎉')+'</div>'+heart+'</div>';
+        // sem card: só o conteúdo, com um fio embaixo separando da faixa de valores
+        if(cd.dias>0)cdCard='<div class="cdcard"><div class="cdtxt"><div class="cdnum">'+cd.dias+'</div><div class="cdlbl">dias para o grande dia</div></div>'+heart+'</div><div class="rule"></div>';
+        else cdCard='<div class="cdcard"><div class="cdnum" style="font-size:1.5rem">'+(cd.dias===0?'É hoje 💍':'Já casaram 🎉')+'</div>'+heart+'</div><div class="rule"></div>';
       }
     }else{dateLine='toque para definir a data';dateAttr='data-act="setdata" style="cursor:pointer"';}
     function svg(p){return '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+p+'</svg>';}
