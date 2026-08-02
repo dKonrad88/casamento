@@ -1,0 +1,69 @@
+# Casamento — app do casamento do Diego & Débora
+
+App **single-file** (`index.html`, ~890 linhas) da suíte pessoal. PWA instalável, dados na nuvem (Supabase), compartilhado entre Diego e Débora.
+
+- **Live:** https://dkonrad88.github.io/casamento/ (GitHub Pages, publica sozinho no push da `main`)
+- **Repo:** `dKonrad88/casamento` (aqui) — trabalhar sempre no `index.html`
+- **Idioma:** PT-BR. Confirmar mudanças de visão com o Diego, mas **commit + push é autônomo**.
+
+## Como rodar / verificar (workflow desta suíte)
+
+O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo usado:
+
+1. Editar `index.html`.
+2. **Validar sintaxe** com `jsc` (não tem node): extrair o `<script>` e `new Function(src)`. Caminho: `/System/Library/Frameworks/JavaScriptCore.framework/Versions/Current/Helpers/jsc`. Checar também chaves `{}` balanceadas no `<style>`.
+3. **Preview:** montar uma cópia em `/private/tmp/.../scratchpad/demo/index.html` com um **shim de fake Supabase** (auto-login + `casamento_state` com dados de teste) — assim o app abre direto no home, sem login. Servir com um `server.py` mínimo que faz `os.chdir` antes (TCC bloqueia `os.getcwd()` em ~/Documents). `launch.json`: `autoPort:true`, porta via env `PORT` (não fixar). Abrir no Browser pane, `resize_window` mobile, screenshot.
+4. **commit + push na `main`**. GitHub Pages publica. Tem `.nojekyll` (obrigatório na suíte).
+
+> O scratchpad é limpo entre turnos — recriar `server.py`/demo quando sumir.
+
+## Dados (Supabase)
+
+- Projeto: **`jlouesrrmqeauzlgvrpw`** (nome "Habit Tracker"). URL/anon-key no topo do `index.html`.
+- Tabela **`casamento_state (lista_id uuid, key text, value jsonb)`**, PK(lista_id,key), RLS por `is_membro(lista_id)`.
+- Chaves (uma linha cada): **`convidados`, `tarefas`, `gastos`, `checklist`, `meta`, `data`**. Gravar SEMPRE via `CAS.set(key, valor)` — **não criar tabelas**.
+- Helper global **`CAS`**: `CAS.get(key,def)` / `CAS.set(key,value)` (upsert na nuvem) / `CAS.espaco()` / `CAS.reload()`. `dados[key]` é atualizado sincronicamente no `set` antes do await → pode `CAS.get` logo depois e re-renderizar.
+- **Espaço do casal:** `listas` tipo=`casamento`, id **`74764948-e020-47cc-b176-ed38af0884eb`**. Membros: **Diego dono** (`7fec78a9-e0d4-4d7a-9a32-abdf16151593`, konraddiego@gmail.com) + **Débora membro** (`807fe468-627a-4e50-8969-3efec0cc4c7b`, debiandrade8@gmail.com). Data do casamento = **2027-10-16**.
+- 🛡️ **GUARD:** trigger `protege_lista` (BEFORE DELETE em `public.listas`) bloqueia exclusão de listas tipo casamento/viagem (o espaço já sumiu 2x no passado por DELETEs misteriosos). Se sumir de novo, olhar `get_logs('api'/'postgres')` pela msg "PROTEGIDO".
+- Fonte histórica dos dados = `hub_state` (blob JSON por user, `data->'casConvidados'` etc.) do módulo Casamento do HUB (`~/Documents/GitHub/hubpessoal`). Migração já foi feita; **NÃO re-migrar** (sobrescreve edições feitas no app).
+
+## Design (Conceito 1 — Editorial, aprovado pelo Diego)
+
+- **Fontes:** Playfair Display (títulos serifados), Cormorant Garamond (datas/labels), Inter (corpo).
+- **Tema claro (padrão) = creme editorial**; tema escuro = "warm dark". Toggle no header. Vars em `:root` (dark) e `[data-theme="light"]`. Acento **dourado** (`--gold`). Azul/teal (`--primary`/`--primary2`) nos ícones/detalhes.
+- **Moldura de celular** (`.phone`) no desktop/tela larga; tela cheia no celular/PWA (media query inverte). Modais/toast são `position:absolute` DENTRO do `.phone`.
+- Sem paridade com o estilo do claude.ai — é identidade própria do app.
+
+## Arquitetura do `index.html`
+
+- IIFE única. **Router** por variável `view` (`home`/`inicio`/`convidados`/`tarefas`/`gastos`/`checklist`); `go(v)` troca. `render()` decide login / criar-espaço / home / seção.
+- **Delegação de eventos no `document`** (NÃO no `#app`) — porque os modais/forms ficam fora do `#app`. `onAppClick` despacha por `data-act`. Também há listeners `input` (buscas, parcelas, filtro select) e `change` (select).
+- **Forms** = bottom-sheet (`openForm(html)`/`closeForm()`), conteúdo em `#fBody`.
+- **Header:** 3 ícones sem fundo — 🌙/☀️ tema · 🔄 atualizar · ⚙ config. Em `home` o header é transparente e o hero editorial fica no conteúdo.
+
+## Telas
+
+- **Home (`homeHTML`):** hero "Diego & Débora / Nosso casamento / data", **card de contagem** ("N dias para o grande dia" + coração azul-claro), fio dourado, 4 tiles (Convidados/Tarefas/Gastos/Checklist com stat ao vivo). Tocar na data/contagem abre `inicio` (resumo completo).
+- **Início (`renderInicio`):** resumo (contagem, confirmados, gasto vs meta via `gastosResumo()`, tarefas pendentes).
+- **Convidados (`convListaHTML`/`renderConvidados`)** — a tela mais trabalhada:
+  - Agrupado por nível (`NIVEIS`: Com certeza/Queremos/Pensar muito/Se couber). **Título do grupo** numa barra com fundo **marrom único** (`rgba(176,137,82,.18)`), **sem** bolinha.
+  - **Casais:** nome do **homem primeiro** — reordenação só na exibição (`gGender`/`ordenaCasal`, heurística terminação -a/-o + listas `GEN_F`/`GEN_M`). "&" em azul. Nomes iguais (mesmo tom).
+  - **Status pelo DOT** ao lado esquerdo: **neutro (cinza) até o convite ser enviado**; depois **verde=confirmado / laranja=pendente / vermelho=recusado** (`dotColor(c)` = `enviado ? statusColor(status) : cinza`).
+  - **Ícones no fim do card, alinhados:** 👑 (padrinho, slot fixo) + **avião de papel** (`planeSVG`) = convite enviado (teal cheio) / não enviado (contorno). Tocar no avião alterna `enviado`. `.grow` expande (`.row .grow,.sw-content .grow`) pra empurrar os ícones sempre pro fim.
+  - **Swipe (gestos, `sw*` funcs):** arrastar **→ direita** revela 3 botões (✓ confirmar / ⏳ pendente / ✕ recusar); **← esquerda** revela 🗑 excluir. Sem botões fixos. `SW_L=162, SW_R=-54`.
+  - **Toolbar compacta:** `<select>` de filtro (Status / Convite enviado-não / Grupo) + 🔍 (abre busca) + ＋ (add). Resumo mostra "X de N convites enviados".
+  - Status possíveis: **confirmado / pendente / recusado** (sem "talvez"). Todos os 109 estão `pendente` e `não enviado` agora (início limpo).
+- **Gastos** — paridade total com o HUB: filtro **Fechado × Planejando** (derivado dos 11 `CAS_STATUS`), editor completo (desc/status/empresa/**valorIni orçado × valor final**→economia/obs), **editor de pagamentos/parcelas** (`formPagamento`: add/remover, marcar paga, dividir, gerar entrada+N, datas mês a mês, resumo ao vivo). Dashboard Fechado/Pago/A pagar/Planejado + projeção. Busca + ordem alfabética. "inicial" riscado + "final" na lista; economia só em negociação real. Gasto sem `tipo` conta como **fechado** (regra herdada do HUB).
+- **Tarefas / Checklist:** funcionais (feito/pendente/quem/data; seções colapsáveis com itens). Ainda **não** ganharam o tratamento editorial completo — próximo passo natural.
+
+## Gotchas
+
+- `esc()` em tudo que vem de dados. IDs novos via `nid()`.
+- Emojis não recebem `color` (são coloridos). Ícones de linha = SVG inline.
+- Ao mexer em nomes/gênero: heurística nunca é 100% — nomes ambíguos ficam sem inverter.
+- Data cleaning já rodado nos nomes (removidos parênteses, "- descritor", relação-só → palavra; alguns swaps homem-primeiro).
+
+## Próximos passos (abertos)
+
+- Levar o editorial pras abas **Tarefas** e **Checklist** (e refinar **Gastos** se quiser).
+- Dashboard read-only no HUB (`hubpessoal`) apontando pra `casamento_state` (hoje o HUB lê o `hub_state` antigo e desatualiza).
