@@ -147,6 +147,15 @@
   .gsw .tt{font-weight:500;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .gsw .tt.done{text-decoration:line-through;opacity:.5}
   .gsw .ms{font-size:.76rem;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .parcbtn{flex:0 0 auto;border:0;background:transparent;color:var(--muted);padding:4px 0 4px 8px;cursor:pointer;display:flex;align-items:center;line-height:1}
+  /* painel "o que falta pagar" (expande abaixo da linha do gasto) */
+  .gparc{padding:0 0 12px 19px;font-size:.8rem}
+  .gparc .pr{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:5px 0}
+  .gparc .pr .d{color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gparc .pr .v{font-family:'Playfair Display',serif;font-weight:600;flex:0 0 auto}
+  .gparc .tot{display:flex;justify-content:space-between;gap:10px;margin-top:4px;padding-top:7px;border-top:1px solid var(--line)}
+  .gparc .tot .k{color:var(--muted)}
+  .gparc .tot .v{font-family:'Playfair Display',serif;font-weight:600}
   .gval{flex:0 0 auto;text-align:right;line-height:1.3}
   .gval .gv{font-family:'Playfair Display',serif;font-size:1rem;font-weight:600;white-space:nowrap}
   .gval .old{text-decoration:line-through;opacity:.75}
@@ -624,7 +633,22 @@
     var economia=ativos.reduce(function(s,g){var vi=parseFloat(g.valorIni)||0,vf=gasVal(g);return s+((vf>0&&vi>vf)?(vi-vf):0);},0);
     return {totalFechado:totalFechado,totalPlan:totalPlan,pago:pago,apagar:totalFechado-pago,projecao:totalFechado+totalPlan,economia:economia,meta:gMeta()};
   }
-  var gasFiltro='fechado', gasBusca='', gasSearchOpen=false;
+  var gasFiltro='fechado', gasBusca='', gasSearchOpen=false, gasAberto={};
+  function chevSVG(open){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transform:rotate('+(open?180:0)+'deg);transition:transform .2s" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>';}
+  // painel read-only do que ainda falta pagar
+  function gastoParcelasHTML(g){
+    var abertas=gParc(g).filter(function(p){return !p.paga;});
+    if(!abertas.length)return '<div class="gparc"><div class="pr"><span class="d">Tudo pago.</span></div></div>';
+    abertas.sort(function(a,b){return String(a.venc||'9999').localeCompare(String(b.venc||'9999'));});
+    var falta=abertas.reduce(function(s,p){return s+(parseFloat(p.valor)||0);},0);
+    var linhas=abertas.map(function(p){
+      var quando=p.venc?fmtBR(p.venc):'sem data';
+      var nome=(p.label||'').trim();
+      return '<div class="pr"><span class="d">'+esc(quando)+(nome?' · '+esc(nome):'')+'</span><span class="v">'+fmt(p.valor||0)+'</span></div>';
+    }).join('');
+    return '<div class="gparc">'+linhas+
+      '<div class="tot"><span class="k">Falta '+abertas.length+' parcela'+(abertas.length===1?'':'s')+'</span><span class="v">'+fmt(falta)+'</span></div></div>';
+  }
   function gastosListaHTML(){
     var q=(gasBusca||'').trim().toLowerCase();
     var lista=gGas().filter(function(g){
@@ -652,7 +676,7 @@
       if(tipo!=='fechado'||canc)sub.push(esc(st));
       if(g.empresa||g.categoria)sub.push(esc(g.empresa||g.categoria));
       if(tipo==='fechado'){var p=gParc(g);if(p.length)sub.push(p.filter(function(x){return x.paga;}).length+'/'+p.length);var pv=gProxVenc(g);if(pv&&!canc)sub.push('venc '+esc(pv));}
-      var pay=(tipo==='fechado');
+      var pay=(tipo==='fechado'),aberto=!!gasAberto[g.id];
       return '<div class="sw">'+
         (pay?'<div class="sw-act l"><button class="sw-pay" data-act="gpag" data-id="'+g.id+'" aria-label="Pagamentos">💳</button></div>':'')+
         '<div class="sw-act r"><button class="sw-del" data-act="gdel" data-id="'+g.id+'" aria-label="Excluir">🗑</button></div>'+
@@ -661,7 +685,9 @@
           '<div class="grow"><div class="tt'+(canc?' done':'')+'">'+esc(g.desc||'(sem descrição)')+'</div>'+
             '<div class="ms">'+sub.join(' · ')+'</div></div>'+
           '<div class="gval">'+right+'</div>'+
-        '</div></div>';
+          (pay?'<button class="parcbtn" data-act="gtogp" data-id="'+g.id+'" aria-expanded="'+aberto+'" aria-label="O que falta pagar">'+chevSVG(aberto)+'</button>':'')+
+        '</div></div>'+
+        (pay&&aberto?gastoParcelasHTML(g):'');
     }).join('');
     var titulo=gasFiltro==='fechado'?'Fechados':gasFiltro==='planejado'?'Planejando':'Todos os gastos';
     return '<div class="card"><h2 class="grp">'+titulo+' <span class="mini" style="font-weight:400">('+lista.length+')</span></h2>'+rows+'</div>';
@@ -857,6 +883,7 @@
     // gastos
     if(act==='gadd'){formGasto(null);return;}
     if(act==='gedit'){var g=curG(id);if(g)formGasto(g);return;}
+    if(act==='gtogp'){gasAberto[id]=!gasAberto[id];var egp=document.getElementById('gasList');if(egp)egp.innerHTML=gastosListaHTML();return;}
     if(act==='gsearch'){gasSearchOpen=!gasSearchOpen;if(!gasSearchOpen)gasBusca='';render();if(gasSearchOpen){var gsi=$('#gasBuscaInput');if(gsi)gsi.focus();}return;}
     if(act==='gdel'){if(confirm('Excluir gasto?')){save('gastos',gGas().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
     if(act==='gsave'){saveGasto(id);return;}
