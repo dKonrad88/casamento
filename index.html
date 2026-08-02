@@ -420,7 +420,7 @@
         var st=effStatus(c),casal=c.conjuge&&c.conjuge.trim();
         return '<div class="row">'+
           '<span class="dot" style="background:'+n[2]+'"></span>'+
-          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt">'+esc(c.nome)+(casal?' <span class="mini">+ '+esc(c.conjuge)+'</span>':'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑':'')+'</div></div>'+
+          '<div class="grow" data-act="cedit" data-id="'+c.id+'"><div class="tt" style="white-space:normal">'+esc(c.nome)+(casal?' &amp; '+esc(c.conjuge):'')+'</div><div class="ms">'+n[1]+' · '+qtd(c)+(c.padrinho?' · 👑':'')+'</div></div>'+
           '<div class="rsvp"><button class="yes'+(st==='confirmado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="confirmado" title="Confirmou">✓</button>'+
           '<button class="no'+(st==='recusado'?' on':'')+'" data-act="cst" data-id="'+c.id+'" data-v="recusado" title="Recusou">✕</button></div>'+
           '<button class="ib" data-act="cdel" data-id="'+c.id+'">🗑</button></div>';
