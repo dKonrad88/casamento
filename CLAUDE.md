@@ -34,6 +34,8 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
 - **Tema claro (padrão) = creme editorial**; tema escuro = "warm dark". Toggle no header. Vars em `:root` (dark) e `[data-theme="light"]`. Acento **dourado** (`--gold`). Azul/teal (`--primary`/`--primary2`) nos ícones/detalhes.
 - **Moldura de celular** (`.phone`) no desktop/tela larga; tela cheia no celular/PWA (media query inverte). Modais/toast são `position:absolute` DENTRO do `.phone`.
 - Sem paridade com o estilo do claude.ai — é identidade própria do app.
+- **Ícone do PWA:** fundo creme com "D&D" em tinta, **&** dourado, fio e a data `16 · 10 · 27` em Cormorant. Gerado por **`tools/gerar-icones.py`** (Pillow; baixa Playfair/Cormorant do Google Fonts pra um tmp — as fontes **não** são versionadas). Renderiza em 4x e reduz, senão a serifa borra. `theme_color`/`background_color` do manifest e o `<meta name="theme-color">` são o creme `#f4efe7` (antes eram azuis, e a splash abria escura).
+- ⚠️ Ao trocar ícone: **suba o `CACHE` no `sw.js`** (`cas-v2`, …). Os arquivos têm nome fixo, então sem o bump o service worker continua servindo os antigos.
 
 ## Arquitetura do `index.html`
 
