@@ -31,7 +31,12 @@
   .header.home{background:transparent;border-bottom:0;padding-bottom:2px}
   .header.home .htxt{display:none}
   .offbar{flex-shrink:0;background:#c99a2e;color:#221a08;font-size:.78rem;font-weight:500;padding:8px 14px;text-align:center;line-height:1.3}
-  .wrap{flex:1;overflow-y:auto;min-height:0;width:100%;max-width:560px;margin:0 auto;padding:16px 16px 40px;scrollbar-width:none}
+  .wrap{flex:1;overflow-y:auto;min-height:0;width:100%;max-width:560px;margin:0 auto;padding:16px 16px 40px;scrollbar-width:none;position:relative;overscroll-behavior-y:contain}
+  /* puxar pra baixo = atualizar */
+  .ptr{position:absolute;left:50%;top:-38px;margin-left:-16px;width:32px;height:32px;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;z-index:30}
+  .ptr > i{display:block;width:14px;height:14px;border-radius:50%;border:2px solid var(--gold);border-top-color:transparent}
+  .ptr.on > i{animation:ptrsp .7s linear infinite}
+  @keyframes ptrsp{to{transform:rotate(360deg)}}
   .wrap::-webkit-scrollbar{display:none}
   .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px}
   .card h2{font-size:1rem;font-weight:600;margin-bottom:.3rem}
@@ -194,12 +199,11 @@
     <div class="htxt"><h1 id="htitle">Casamento</h1><p id="hsub"></p></div>
     <div class="hacts">
       <button class="hbtn" id="themeBtn" aria-label="Alternar tema">🌙</button>
-      <button class="hbtn" id="updBtn" aria-label="Atualizar o app">🔄</button>
       <button class="hbtn" id="cfgBtn" aria-label="Configurações">⚙️</button>
     </div>
   </div>
   <div class="offbar" id="filaBar" style="display:none"></div>
-  <div class="wrap"><div id="app"></div></div>
+  <div class="wrap"><div class="ptr" id="ptr"><i></i></div><div id="app"></div></div>
 
   <div class="modal-bg" id="cfgBg"></div>
   <div class="modal" id="cfgModal" style="display:none">
@@ -943,6 +947,78 @@
     swSuppress=true;setTimeout(function(){swSuppress=false;},400);
   }
 
+  /* ---------- puxar pra baixo = atualizar ----------
+     Substitui o antigo botão 🔄 do header. Recarrega os dados e, de quebra,
+     checa se saiu versão nova do app (o "forçar atualização" pesado, que limpa
+     cache, ficou nas ⚙ Configurações). */
+  var PTR_MAX=90, PTR_TRIG=42;
+  var ptrX0=0,ptrY0=0,ptrDrag=false,ptrOn=false,ptrHit=false,ptrBusy=false;
+  function ptrNode(){return document.getElementById('ptr');}
+  function ptrSet(d,anim){
+    var e=ptrNode();if(!e)return;
+    e.style.transition=anim?'transform .2s ease, opacity .2s ease':'';
+    e.style.transform='translateY('+d+'px)';
+    e.style.opacity=d>2?String(Math.min(1,d/PTR_TRIG)):'0';
+    // o conteúdo desce junto, como nos apps nativos (senão o indicador cobre o título)
+    var a=document.getElementById('app');
+    if(a){a.style.transition=anim?'transform .2s ease':'';a.style.transform=d?'translateY('+d+'px)':'';}
+  }
+  function ptrDown(e){
+    ptrOn=false;
+    if(ptrBusy||!user||!espacoId)return;
+    if(e.target.closest&&(e.target.closest('.modal')||e.target.closest('.modal-bg')))return;
+    var w=document.querySelector('.wrap');
+    if(!w||w.scrollTop>0)return;
+    ptrX0=e.clientX;ptrY0=e.clientY;ptrDrag=false;ptrHit=false;ptrOn=true;
+  }
+  function ptrMove(e){
+    if(!ptrOn)return;
+    var dy=e.clientY-ptrY0,dx=e.clientX-ptrX0;
+    if(!ptrDrag){
+      if(dy<8){if(dy<-6||Math.abs(dx)>10)ptrOn=false;return;}
+      if(Math.abs(dx)>Math.abs(dy)){ptrOn=false;return;}   // arrasto horizontal é do swipe das linhas
+      ptrDrag=true;
+    }
+    if(e.cancelable)e.preventDefault();
+    var d=Math.min(dy*0.45,PTR_MAX);
+    ptrHit=d>=PTR_TRIG;
+    ptrSet(d,false);
+  }
+  function ptrUp(){
+    if(!ptrOn)return;
+    var disparar=ptrDrag&&ptrHit;
+    ptrOn=false;ptrDrag=false;
+    if(disparar)ptrRefresh();else ptrSet(0,true);
+  }
+  async function ptrRefresh(){
+    if(ptrBusy)return;
+    ptrBusy=true;
+    var e=ptrNode();if(e)e.classList.add('on');
+    ptrSet(46,true);
+    try{await escoarFila();}catch(x){}
+    try{await carregarDados();render();}catch(x){}
+    var novaVersao=false;
+    try{novaVersao=await checarVersao();}catch(x){}
+    var q=ptrNode();if(q)q.classList.remove('on');
+    ptrSet(0,true);
+    ptrBusy=false;
+    if(!novaVersao){try{toast('Atualizado');}catch(x){}}
+  }
+  // devolve true se achou versão nova (nesse caso a página recarrega sozinha)
+  async function checarVersao(){
+    if(!('serviceWorker' in navigator))return false;
+    var reg=await navigator.serviceWorker.getRegistration();
+    if(!reg)return false;
+    try{await reg.update();}catch(x){}
+    if(!reg.waiting)return false;
+    try{toast('Nova versão — atualizando…');}catch(x){}
+    var done=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){if(done)return;done=true;location.reload();});
+    reg.waiting.postMessage({type:'SKIP_WAITING'});
+    setTimeout(function(){if(!done){done=true;location.reload();}},1500);
+    return true;
+  }
+
   /* ---------- delegação de eventos ---------- */
   function findId(el){return el.getAttribute('data-id');}
   function onAppClick(e){
@@ -1014,7 +1090,10 @@
       ? '<button class="mitem" id="cfgData"><span class="mic">📅</span> Data do casamento'+(gData()?' — '+esc(fmtBR(gData())):'')+'</button>'
       : '';
     body.innerHTML='<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:6px">⚙️ Configurações</h2>'+
-      conta+compart+dataItem;
+      conta+compart+dataItem+
+      '<button class="mitem" id="cfgUpd"><span class="mic">🔄</span> Forçar atualização do app</button>'+
+      '<div class="sub" style="margin-top:6px">No dia a dia basta <b>puxar a tela pra baixo</b>. Use isto só se o app parecer travado numa versão antiga.</div>';
+    var u=$('#cfgUpd');if(u)u.addEventListener('click',function(){closeCfg();updateApp();});
     var o=$('#cfgOut');if(o)o.addEventListener('click',sbLogout);
     var sh=$('#cfgShare');if(sh)sh.addEventListener('click',gerarConvite);
     var dt=$('#cfgData');if(dt)dt.addEventListener('click',function(){closeCfg();pedirData();});
@@ -1026,13 +1105,16 @@
   $('#cfgBtn').addEventListener('click',openCfg);
   $('#cfgBg').addEventListener('click',closeCfg);
   $('#themeBtn').addEventListener('click',function(){var t=document.documentElement.getAttribute('data-theme');setTheme(t==='dark'?'light':'dark');});
-  $('#updBtn').addEventListener('click',updateApp);
   $('#backBtn').addEventListener('click',function(){go('home');});
   $('#fBg').addEventListener('click',closeForm);
   document.addEventListener('click',onAppClick);
   document.addEventListener('pointerdown',swDown);
   document.addEventListener('pointermove',swMove,{passive:false});
   document.addEventListener('pointerup',swUp);
+  document.addEventListener('pointerdown',ptrDown);
+  document.addEventListener('pointermove',ptrMove,{passive:false});
+  document.addEventListener('pointerup',ptrUp);
+  document.addEventListener('pointercancel',function(){if(ptrOn){ptrOn=false;ptrDrag=false;ptrSet(0,true);}});
   document.addEventListener('pointercancel',function(){if(swEl){swEl.style.transition='';swEl.style.transform=(swEl._sw?'translateX('+swEl._sw+'px)':'');swEl=null;}});
   document.addEventListener('click',function(e){if(swSuppress){if(e.target.closest&&e.target.closest('.sw-content')){e.stopPropagation();e.preventDefault();}swSuppress=false;}},true);
   document.addEventListener('input',function(e){

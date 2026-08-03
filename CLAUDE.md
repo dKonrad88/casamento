@@ -40,7 +40,8 @@ O app precisa de login Supabase real → **não dá pra testar direto**. Fluxo u
 - IIFE única. **Router** por variável `view` (`home`/`inicio`/`convidados`/`tarefas`/`gastos`/`checklist`); `go(v)` troca. `render()` decide login / criar-espaço / home / seção.
 - **Delegação de eventos no `document`** (NÃO no `#app`) — porque os modais/forms ficam fora do `#app`. `onAppClick` despacha por `data-act`. Também há listeners `input` (buscas, parcelas, filtro select) e `change` (select).
 - **Forms** = bottom-sheet (`openForm(html)`/`closeForm()`), conteúdo em `#fBody`.
-- **Header:** 3 ícones sem fundo — 🌙/☀️ tema · 🔄 atualizar · ⚙ config. Em `home` o header é transparente e o hero editorial fica no conteúdo.
+- **Header:** 2 ícones sem fundo — 🌙/☀️ tema · ⚙ config. Em `home` o header é transparente e o hero editorial fica no conteúdo.
+- **Puxar pra baixo = atualizar** (substituiu o botão 🔄): funções `ptrDown/ptrMove/ptrUp/ptrRefresh`, indicador `.ptr` dentro do `.wrap` (`top:-38px`, desce com o conteúdo — o `#app` recebe o mesmo `translateY`, senão o indicador cobre o título). Só arma com `wrap.scrollTop===0`, movimento predominantemente vertical e pra baixo — arrasto horizontal fica com o swipe das linhas. Dispara `escoarFila()` + `carregarDados()` + `checarVersao()` (service worker). O **"forçar atualização"** pesado (limpa cache, `updateApp()`) migrou pras ⚙ **Configurações**.
 
 ## Telas
 
