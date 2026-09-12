@@ -67,6 +67,10 @@
   .modal .handle{width:42px;height:5px;border-radius:5px;background:var(--line);margin:4px auto 14px}
   .mitem{display:flex;gap:12px;align-items:center;width:100%;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:10px;color:var(--ink);font-size:1rem;font-weight:500;cursor:pointer;text-align:left;font-family:inherit}
   .mitem .mic{font-size:1.15rem}
+  .mitem.viaopt{align-items:center;gap:12px;text-align:left}
+  .mitem.viaopt .mic{display:flex;align-items:center;flex:0 0 auto}
+  .mitem.viaopt.on{border-color:var(--gold)}
+  .mitem.viaopt .grow{flex:1;min-width:0}
   .code-box{font-size:1.8rem;font-weight:700;letter-spacing:4px;text-align:center;background:var(--card2);border:1px dashed var(--primary2);border-radius:12px;padding:16px;margin:10px 0;color:var(--primary2)}
   .conn{font-size:.85rem;color:var(--muted);margin-top:6px}
   .toast{position:absolute;left:50%;bottom:calc(env(safe-area-inset-bottom) + 20px);transform:translateX(-50%) translateY(20px);background:#0a0f15;color:#fff;border:1px solid var(--line);padding:11px 18px;border-radius:999px;font-size:.9rem;opacity:0;transition:.25s;z-index:70;pointer-events:none}
@@ -374,6 +378,15 @@
   function statusColor(st){return st==='confirmado'?'#1f9d63':st==='recusado'?'#d2533f':'#e0902a';}
   function dotColor(c){return c.enviado?statusColor(effStatus(c)):'#c3b9a8';}
   function planeSVG(sent){var c=sent?'#1a7a8a':'#9a8f7f';return '<svg viewBox="0 0 24 24" width="22" height="22" fill="'+(sent?c:'none')+'" stroke="'+c+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>';}
+  // como o convite chega: envelope = fisico (em maos), celular = online. Cinza = ainda nao decidido
+  function viaSVG(v){
+    var on=(v==='fisico'||v==='online'), cor=on?'#b8935a':'#c3b9a8';
+    if(v==='online')
+      return '<svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="'+cor+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6"/><path d="M10.6 5.4h2.8"/><path d="M9.7 13.1l1.7 1.7 3.2-3.6"/></svg>';
+    return '<svg viewBox="0 0 24 24" width="21" height="21" fill="'+(v==='fisico'?'rgba(184,147,90,.16)':'none')+'" stroke="'+cor+'" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.2"/><path d="M3.2 6.4l8.8 6.4 8.8-6.4"/></svg>';
+  }
+  function viaDe(c){return (c&&(c.via==='fisico'||c.via==='online'))?c.via:'';}
+  function viaNome(v){return v==='fisico'?'convite físico':v==='online'?'convite online':'a definir';}
   function _na(s){s=String(s==null?'':s);try{return s.normalize('NFD').replace(/[̀-ͯ]/g,'');}catch(e){return s;}}
   function _fn(s){return _na(String(s||'').trim().split(/\s+/)[0]||'').toLowerCase();}
   function isRel(s){return /^(namorad[oa]|espos[oa]|marido|mulher|noiv[oa]|companheir[oa]|acompanhante)$/.test(_na(String(s||'').trim()).toLowerCase());}
@@ -556,6 +569,7 @@
             '<span class="dot" style="background:'+dotColor(c)+'"></span>'+
             '<div class="grow"><div class="tt" style="white-space:normal">'+nomes+'</div></div>'+
             '<span class="crownslot">'+(c.padrinho?'👑':'')+'</span>'+
+            '<button class="sendbtn" data-act="cviapick" data-id="'+c.id+'" title="Entrega: '+viaNome(viaDe(c))+'" aria-label="Como entregar o convite">'+viaSVG(viaDe(c))+'</button>'+
             '<button class="sendbtn" data-act="csend" data-id="'+c.id+'" title="'+(c.enviado?'Convite enviado':'Convite não enviado')+'" aria-label="Convite enviado?">'+planeSVG(!!c.enviado)+'</button>'+
           '</div></div>';
       }).join('');
@@ -571,6 +585,9 @@
     var pend=conv.filter(function(c){return effStatus(c)==='pendente';}).reduce(function(s,c){return s+qtd(c);},0);
     var rec=conv.filter(function(c){return effStatus(c)==='recusado';}).reduce(function(s,c){return s+qtd(c);},0);
     var enviados=conv.filter(function(c){return c.enviado;}).length;
+    var nFis=conv.filter(function(c){return viaDe(c)==='fisico';}).length;
+    var nOnl=conv.filter(function(c){return viaDe(c)==='online';}).length;
+    var nSem=conv.length-nFis-nOnl;
     var pct=tot?Math.round(conf/tot*100):0;
     var opt=function(v,l){return '<option value="'+v+'"'+(convFilter===v?' selected':'')+'>'+esc(l)+'</option>';};
     var filterSel='<select id="convFilterSel" class="cfilter" aria-label="Filtrar">'+
@@ -583,7 +600,12 @@
         '<div style="text-align:right"><div class="mini">Convites</div><div style="font-weight:600">'+conv.length+'</div></div></div>'+
         '<div class="prog"><i style="width:'+pct+'%"></i></div>'+
         '<div class="mini" style="margin-top:8px"><span style="color:#e0902a">'+pend+' pendentes</span> · <span style="color:#c0503f">'+rec+' recusaram</span></div>'+
-        '<div class="mini" style="margin-top:4px;display:flex;align-items:center;gap:6px">'+planeSVG(true)+' '+enviados+' de '+conv.length+' convites enviados</div></div>'+
+        '<div class="mini" style="margin-top:4px;display:flex;align-items:center;gap:6px">'+planeSVG(true)+' '+enviados+' de '+conv.length+' convites enviados</div>'+
+        '<div class="mini" style="margin-top:6px;display:flex;align-items:center;gap:5px;flex-wrap:wrap">'+
+          viaSVG('fisico')+' '+nFis+' físico'+(nFis===1?'':'s')+
+          '<span style="opacity:.35">·</span>'+viaSVG('online')+' '+nOnl+' online'+
+          (nSem?'<span style="opacity:.35">·</span><span>'+nSem+' a definir</span>':'')+
+        '</div></div>'+
       '<div class="cbar">'+filterSel+
         '<button class="ib2'+(convSearchOpen?' on':'')+'" data-act="csearch" aria-label="Buscar">🔍</button>'+
         '<button class="ib2 add" data-act="cadd" aria-label="Adicionar convidado">＋</button></div>'+
@@ -614,6 +636,21 @@
     save('convidados',arr);return true;
   }
   function saveConvidado(id){if(persistConvidado(id)!==false){closeForm();render();}}
+  function formVia(id){
+    var c=gConv().filter(function(x){return String(x.id)===String(id);})[0];if(!c)return;
+    var atual=viaDe(c);
+    var quem=esc(c.nome||'')+((c.conjuge&&c.conjuge.trim())?' & '+esc(c.conjuge):'');
+    var opt=function(v,titulo,sub){
+      return '<button class="mitem viaopt'+(atual===v?' on':'')+'" data-act="cvia" data-id="'+id+'" data-v="'+v+'">'+
+        '<span class="mic">'+viaSVG(v)+'</span><span class="grow"><b>'+titulo+'</b><span class="mini" style="display:block">'+sub+'</span></span>'+
+        (atual===v?'<span style="color:#1f9d63">✓</span>':'')+'</button>';
+    };
+    openForm('<h2 style="font-size:1.05rem;font-weight:600;margin-bottom:2px">Como entregar o convite</h2>'+
+      '<div class="sub" style="margin-bottom:6px">'+quem+'</div>'+
+      opt('fisico','Convite físico','Entregar em mãos, impresso')+
+      opt('online','Convite online','Mandar o link por mensagem')+
+      (atual?'<button class="btn soft" data-act="cvia" data-id="'+id+'" data-v="" style="margin-top:10px">Deixar a definir</button>':''));
+  }
   var clinkForId=null, clinkBusca='';
   function clinkRowsHTML(){
     var id=clinkForId,q=(clinkBusca||'').trim().toLowerCase();
@@ -1035,6 +1072,8 @@
     if(act==='csend'){var ae=gConv().slice();var ce=ae.filter(function(x){return String(x.id)===String(id);})[0];if(ce){ce.enviado=!ce.enviado;save('convidados',ae);render();}return;}
     if(act==='cst'){var arr=gConv().slice();var c=arr.filter(function(x){return String(x.id)===String(id);})[0];if(c){c.status=(effStatus(c)===v?'pendente':v);save('convidados',arr);render();}return;}
     if(act==='cdel'){var nm=(gConv().filter(function(x){return String(x.id)===String(id);})[0]||{}).nome||'convidado';if(confirm('Excluir "'+nm+'"?')){save('convidados',gConv().filter(function(x){return String(x.id)!==String(id);}));closeForm();render();}return;}
+    if(act==='cviapick'){formVia(id);return;}
+    if(act==='cvia'){var av=gConv().slice();var cv=av.filter(function(x){return String(x.id)===String(id);})[0];if(cv){if(v)cv.via=v;else delete cv.via;save('convidados',av);}closeForm();render();return;}
     if(act==='csave'){saveConvidado(id);return;}
     if(act==='clinkpick'){if(persistConvidado(id)!==false)clinkPicker(id);return;}
     if(act==='clink'){var lpid=el.getAttribute('data-p');var lar=gConv().slice();var lself=lar.filter(function(x){return String(x.id)===String(id);})[0];var lp=lar.filter(function(x){return String(x.id)===String(lpid);})[0];if(lself&&lp){lself.conjuge=lp.nome+(lp.conjuge?(' e '+lp.conjuge):'');lself.qtd=2;lar=lar.filter(function(x){return String(x.id)!==String(lpid);});save('convidados',lar);}closeForm();render();try{toast('Casal formado ✓');}catch(e){}return;}
