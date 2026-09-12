@@ -679,7 +679,7 @@
     var rows=tar.map(function(t){
       var sub=[];if(t.quem)sub.push('👤 '+esc(t.quem));if(t.data)sub.push('📅 '+esc(fmtBR(t.data)));
       return '<div class="row"><span class="chk'+(t.done?' on':'')+'" data-act="ttog" data-id="'+t.id+'">'+(t.done?'✓':'')+'</span>'+
-        '<div class="grow" data-act="tedit" data-id="'+t.id+'"><div class="tt'+(t.done?' done':'')+'">'+(esc(t.titulo)||'<span class="mini">(sem título)</span>')+'</div>'+(sub.length?'<div class="ms">'+sub.join(' · ')+'</div>':'')+'</div>'+
+        '<div class="grow" data-act="tedit" data-id="'+t.id+'"><div class="tt'+(t.done?' done':'')+'" style="white-space:normal;line-height:1.3">'+(esc(t.titulo)||'<span class="mini">(sem título)</span>')+'</div>'+(sub.length?'<div class="ms" style="white-space:normal">'+sub.join(' · ')+'</div>':'')+'</div>'+
         '<button class="ib" data-act="tdel" data-id="'+t.id+'">🗑</button></div>';
     }).join('');
     app.innerHTML=
